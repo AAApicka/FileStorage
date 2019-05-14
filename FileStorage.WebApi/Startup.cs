@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Elinkx.FileStorage.DataLayer;
+using Microsoft.EntityFrameworkCore;
 
 namespace FileStorage {
     public class Startup {
@@ -21,6 +23,9 @@ namespace FileStorage {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            //inicializace db v poolu pokud neni jinak vraceni pokud je + config.
+            services.AddDbContextPool<DataContext>(
+                options => options.UseSqlServer(Configuration.GetConnectionString("MyDbConnection")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

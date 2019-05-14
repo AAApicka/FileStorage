@@ -1,7 +1,9 @@
-﻿ using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace Elinkx.FileStorage.Contracts {
-    public class FileMetadata {
+namespace Elinkx.FileStorage.DataLayer {
+    public class DbMetadata {
         public int FileId { get; set; }
         public string ContentType { get; set; }
         public int SubjectId { get; set; }
@@ -11,14 +13,8 @@ namespace Elinkx.FileStorage.Contracts {
         public int TypeId { get; set; }
         public int SubtypeId { get; set; }
         public bool Signed { get; set; }
-        public string UserCode { get; set; }
-    }
-    public class SetFileResult {
-        //public bool Reject { get; set; } bude resit service layer
-        public string UserCode { get; set; }
-        public int FileId { get; set; }
+        public string Reject { get; set; }
+        public string CreatedBy { get; set; }
         public DateTime Created { get; set; }
-        public DateTime Changed { get; set; }
     }
-
 }

@@ -6,11 +6,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Elinkx.FileStorage.DataLayer {
     public class Data {
         string connection;
-        DbContext dbSession;
-        DbSet<FileMetadata> dbSet;
+        DataContext dbSession;
 
         public Data() {
-            connection = "???????";//nacte z configu?-idealne ano
+            //dbSession = new DataContext();
         }
         public void SetFileContent(FileMetadata fileMetadata) {
             //Todo:LinQ query

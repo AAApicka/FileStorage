@@ -13,9 +13,12 @@ namespace Elinkx.FileStorage.ServiceLayer {
         // Sets File metadata and content into database and returns saved metadata
         // with model generated info
         public FileMetadata SetFile(FileMetadata fileMetadata) {
+
             FileMetadata retFm;
+            // resit jako jedna transakce v DL.!
             dataLayer.SetFileContent(fileMetadata);
-            return fileMetadata;
+            retFm = dataLayer.SetFileMetadata(fileMetadata);
+            return retFm; 
         }
 
 

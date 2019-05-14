@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FileStorage.Contracts\FileStorage.Contracts.csproj" />
+    <ProjectReference Include="..\FileStorage.DataLayer\FileStorage.DataLayer.csproj" />
     <ProjectReference Include="..\FileStorage.ServiceLayer\FileStorage.ServiceLayer.csproj" />
   </ItemGroup>
 
