@@ -14,33 +14,19 @@ namespace Elinkx.FileStorage.Controllers {
     [ApiController]
     public class FileController : ControllerBase {
         private readonly Service service;
-        
+        FileMetadata fmTest = new FileMetadata();
+
         public FileController() {
             service = new Service();
         }
-        [HttpPost]
-        public FileMetadata SetFile(FileMetadata fileMetadata) {
-            return service.SetFile(fileMetadata);
-        }
         
-
-
-
-        [HttpPost]
-        public FileMetadata GetFileMetadata() {
-            return service.GetFileMetadata();
-        }
-        [HttpPost]
-        public FileReject GetFileReject() {
-            return service.GetFileReject();
-        }
-        [HttpPost]
-        public FileReject SetFileReject() {
-            return service.SetFileReject();
-        }
-
-        public ActionResult IsHealthy() {
-            return Content("isHealthy");
+        public ActionResult SetFile() {
+            fmTest.ContentType = "ctype";
+            fmTest.Description = "tdstd";
+            fmTest.Name = "name";
+            fmTest.FileId = 1;
+            service.SetFile(fmTest);
+            return Content("done");
         }
     }
     

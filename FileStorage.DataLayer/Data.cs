@@ -6,17 +6,24 @@ using Microsoft.EntityFrameworkCore;
 namespace Elinkx.FileStorage.DataLayer {
     public class Data {
         string connection;
-        DataContext dbSession;
+        DataContext _context;
 
         public Data() {
-            //dbSession = new DataContext();
+            _context = new DataContext("server=localhost\\SQLEXPRESS;database=FileStorage;Trusted_Connection=true");
         }
         public void SetFileContent(FileMetadata fileMetadata) {
-            //Todo:LinQ query
+            //Todo:
         }
-        public FileMetadata SetFileMetadata(FileMetadata fileMetadata) {
-            //Todo:LinQ query
-            return fileMetadata;
+        public SetFileResult SetFileMetadata(FileMetadata fileMetadata) {
+            DbMetadata dbmd = new DbMetadata();
+            SetFileResult sfResult = new SetFileResult();
+            dbmd.Name = fileMetadata.Name;
+            dbmd.FileId = 1;
+            sfResult.FileId = dbmd.FileId;
+            _context.dbMetadata.Add(dbmd);
+            _context.SaveChanges();
+
+            return sfResult;
         }
 
 
@@ -26,11 +33,6 @@ namespace Elinkx.FileStorage.DataLayer {
         public FileMetadata GetFileMetadata() {
             return new FileMetadata();
         }
-        public FileReject SetFileReject() {
-            return new FileReject();
-        }
-        public FileReject GetFileReject() {
-            return new FileReject();
-        }
+        
     }
 }
