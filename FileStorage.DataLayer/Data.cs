@@ -2,6 +2,7 @@
 using System.Text;
 using Elinkx.FileStorage.Contracts;
 using Elinkx.FileStorage.Models;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Elinkx.FileStorage.DataLayer
 {
@@ -23,43 +24,60 @@ namespace Elinkx.FileStorage.DataLayer
                 FileContent fileContent = new FileContent();
                 SetFileResult result = new SetFileResult();
 
-                // case1 FileId je 0 - tedy novy zaznam v db
-                if (setFileRequest.FileId == 0)
+                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
                 {
-                    metadata.ContentType = setFileRequest.ContentType;
-                    metadata.SubjectId = setFileRequest.SubjectId;
-                    metadata.Name = setFileRequest.Name;
-                    metadata.Description = setFileRequest.Description;
-                    metadata.DocumentId = setFileRequest.DocumentId;
-                    metadata.TypeId = setFileRequest.TypeId;
-                    metadata.SubtypeId = setFileRequest.SubtypeId;
-                    metadata.Signed = setFileRequest.Signed;
-                    metadata.Reject = false;
-                    metadata.Created = DateTime.Now;
-                    metadata.CreatedBy = setFileRequest.UserCode;
-                    metadata.Changed = DateTime.Now;
-                    metadata.ChangedBy = setFileRequest.UserCode;
-                    _context.Add(metadata);
-                    _context.SaveChanges();
+                    try
+                    {
+                        // case1 FileId je 0 - tedy novy zaznam v db
+                        if (setFileRequest.FileId == 0)
+                        {
+                            metadata.ContentType = setFileRequest.ContentType;
+                            metadata.SubjectId = setFileRequest.SubjectId;
+                            metadata.Name = setFileRequest.Name;
+                            metadata.Description = setFileRequest.Description;
+                            metadata.DocumentId = setFileRequest.DocumentId;
+                            metadata.TypeId = setFileRequest.TypeId;
+                            metadata.SubtypeId = setFileRequest.SubtypeId;
+                            metadata.Signed = setFileRequest.Signed;
+                            metadata.Reject = false;
+                            metadata.Created = DateTime.Now;
+                            metadata.CreatedBy = setFileRequest.UserCode;
+                            metadata.Changed = DateTime.Now;
+                            metadata.ChangedBy = setFileRequest.UserCode;
+                            _context.Add(metadata);
+                            _context.SaveChanges();
 
-                    fileContent.Content = Encoding.ASCII.GetBytes("some string to test storage in db");
-                    _context.Add(fileContent);
-                    _context.SaveChanges();
+                            fileContent.Content = Encoding.ASCII.GetBytes("some string to test storage in db");
+                            _context.Add(fileContent);
+                            _context.SaveChanges();
 
-                    fileVersion.FileId = metadata.FileId;
-                    fileVersion.RowId = fileContent.RowId;
-                    fileVersion.Changed = metadata.Changed;
-                    fileVersion.ChangedBy = metadata.ChangedBy;
-                    fileVersion.Size = fileContent.Content.Length;
-                    _context.Add(fileVersion);
+                            fileVersion.FileId = metadata.FileId;
+                            fileVersion.RowId = fileContent.RowId;
+                            fileVersion.Changed = metadata.Changed;
+                            fileVersion.ChangedBy = metadata.ChangedBy;
+                            fileVersion.Size = fileContent.Content.Length;
+                            _context.Add(fileVersion);
 
-                    result.FileId = metadata.FileId;
-                    result.Changed = DateTime.Now;
-                    result.ChangedBy = metadata.ChangedBy;
+                            //throw new Exception();
 
-                    _context.SaveChanges();
+                            result.FileId = metadata.FileId;
+                            result.Changed = DateTime.Now;
+                            result.ChangedBy = metadata.ChangedBy;
+
+                            _context.SaveChanges();
+
+                            transaction.Commit();
+                        }
+                    } catch (Exception e)
+                    {
+                        transaction.Rollback();
+                        Console.WriteLine(e.Message + e.StackTrace);
+                        result.FileId = 0;
+                        result.Changed = new DateTime();
+                        result.ChangedBy = "NULL";
+                    }
+                    return result;
                 }
-                return result;
             }
 
             
