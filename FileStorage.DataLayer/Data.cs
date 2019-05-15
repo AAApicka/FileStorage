@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Elinkx.FileStorage.Contracts;
 using Elinkx.FileStorage.Models;
 
@@ -38,12 +39,25 @@ namespace Elinkx.FileStorage.DataLayer
                 metadata.ChangedBy = setFileRequest.UserCode;
                 _context.Add(metadata);
                 _context.SaveChanges();
-                result.UserCode = "done";
-                result.FileId = 1;
-                result.Created = DateTime.Now;
+
+                fileContent.Content = Encoding.ASCII.GetBytes("some string to test storage in db");
+                _context.Add(fileContent);
+                _context.SaveChanges();
+
+                fileVersion.FileId = metadata.FileId;
+                fileVersion.RowId = fileContent.RowId;
+                fileVersion.Changed = metadata.Changed;
+                fileVersion.ChangedBy = metadata.ChangedBy;
+                fileVersion.Size = fileContent.Content.Length;
+                _context.Add(fileVersion);
+                _context.SaveChanges();
+
+                result.FileId = metadata.FileId;
                 result.Changed = DateTime.Now;
+                result.ChangedBy = metadata.ChangedBy;
             }
 
+            
             return result;
         }
 
