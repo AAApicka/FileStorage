@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileStorage.Contracts", "FileStorage.Contracts\FileStorage.Contracts.csproj", "{220558B4-A57D-46FA-AE42-0F5F2376AD37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorage.Contracts", "FileStorage.Contracts\FileStorage.Contracts.csproj", "{220558B4-A57D-46FA-AE42-0F5F2376AD37}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileStorage.DataLayer", "FileStorage.DataLayer\FileStorage.DataLayer.csproj", "{485194A4-497E-4CC6-B04E-028C6CD81A58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorage.DataLayer", "FileStorage.DataLayer\FileStorage.DataLayer.csproj", "{485194A4-497E-4CC6-B04E-028C6CD81A58}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorage.WebApi", "FileStorage.WebApi\FileStorage.WebApi.csproj", "{1205C67C-E5B3-49A6-A96D-9098A2E5302D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorage.ServiceLayer", "FileStorage.ServiceLayer\FileStorage.ServiceLayer.csproj", "{999C7776-7AC0-43EA-BF26-A7D837728FA3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileStorage.Models", "FileStorage.Models\FileStorage.Models.csproj", "{9699A068-DD48-4C1C-9CB5-3C9AE07087F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{999C7776-7AC0-43EA-BF26-A7D837728FA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{999C7776-7AC0-43EA-BF26-A7D837728FA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{999C7776-7AC0-43EA-BF26-A7D837728FA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9699A068-DD48-4C1C-9CB5-3C9AE07087F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9699A068-DD48-4C1C-9CB5-3C9AE07087F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9699A068-DD48-4C1C-9CB5-3C9AE07087F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9699A068-DD48-4C1C-9CB5-3C9AE07087F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

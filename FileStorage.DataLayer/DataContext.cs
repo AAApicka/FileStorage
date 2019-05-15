@@ -1,22 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Elinkx.FileStorage.Models;
 
-namespace Elinkx.FileStorage.DataLayer {
-    public class DataContext : DbContext {
+namespace Elinkx.FileStorage.DataLayer
+{
+    public class DataContext : DbContext
+    {
         string comSetup;
 
-        public DataContext(string comSetup) {
+        public DataContext(string comSetup)
+        {
             this.comSetup = comSetup;
-
         }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-            Console.WriteLine("connected");
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
             optionsBuilder.UseSqlServer(comSetup);
         }
 
-        //all tables in database:
-        public DbSet<DbMetadata> dbMetadata { get; set; }
+        public DbSet<Metadata> Metadata { get; set; }
+        public DbSet<FileVersion> FileVersion { get; set; }
+        public DbSet<FileContent> FileContent { get; set; }
     }
 }

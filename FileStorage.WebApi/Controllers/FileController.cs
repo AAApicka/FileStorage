@@ -1,33 +1,24 @@
-﻿using System;
-using System.IO;
-using System.Configuration;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Elinkx.FileStorage.ServiceLayer;
 using Elinkx.FileStorage.Contracts;
-using Elinkx.FileStorage.ServiceLayer;
-using System.Web;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Elinkx.FileStorage.Controllers {
+namespace Elinkx.FileStorage.Controllers
+{
     [Route("api/[controller]")]
     [ApiController]
-    public class FileController : ControllerBase {
+    public class FileController : ControllerBase
+    {
         private readonly Service service;
-        FileMetadata fmTest = new FileMetadata();
 
-        public FileController() {
+        public FileController()
+        {
             service = new Service();
         }
-        
-        public ActionResult SetFile() {
-            fmTest.ContentType = "ctype";
-            fmTest.Description = "tdstd";
-            fmTest.Name = "name";
-            fmTest.FileId = 1;
-            service.SetFile(fmTest);
-            return Content("done");
+        [Route("setfile")]
+        public SetFileResult SetFile(SetFileRequest setFileRequest)
+        {
+            return service.SetFile(setFileRequest);
         }
     }
-    
+
 }

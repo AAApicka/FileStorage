@@ -3,29 +3,26 @@ using System.IO;
 using Elinkx.FileStorage.Contracts;
 using Elinkx.FileStorage.DataLayer;
 
-namespace Elinkx.FileStorage.ServiceLayer {
-    public class Service {
+namespace Elinkx.FileStorage.ServiceLayer
+{
+    public class Service
+    {
         private readonly Data dataLayer;
 
-        public Service() {
+        public Service()
+        {
             dataLayer = new Data();
         }
-        // Sets File metadata and content into database and returns saved metadata
-        // with model generated info
-        public SetFileResult SetFile(FileMetadata fileMetadata) {
+        /// <summary>
+        /// Saves File and its Metadata into database. It will create new version for existing files
+        /// </summary>
+        /// <returns>Returns metadata with generated FileId</returns>
+        public SetFileResult SetFile(SetFileRequest fileMetadata)
+        {
             // resit jako jedna transakce v DL.!
-            dataLayer.SetFileContent(fileMetadata);
-            return dataLayer.SetFileMetadata(fileMetadata);
+            return dataLayer.SetFile(fileMetadata);
         }
 
-
-
-
-
-        public FileMetadata GetFileMetadata() {
-            return dataLayer.GetFileMetadata();
-        }
-    
 
     }
 }
