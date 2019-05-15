@@ -40,10 +40,12 @@ namespace Elinkx.FileStorage.DataLayer
                     metadata.Changed = DateTime.Now;
                     metadata.ChangedBy = setFileRequest.UserCode;
                     _context.Add(metadata);
+                    _context.SaveChanges();
 
                     fileContent.Content = Encoding.ASCII.GetBytes("some string to test storage in db");
                     _context.Add(fileContent);
-                   
+                    _context.SaveChanges();
+
                     fileVersion.FileId = metadata.FileId;
                     fileVersion.RowId = fileContent.RowId;
                     fileVersion.Changed = metadata.Changed;
