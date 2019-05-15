@@ -57,6 +57,7 @@ namespace Elinkx.FileStorage.DataLayer
                             fileVersion.ChangedBy = metadata.ChangedBy;
                             fileVersion.Size = fileContent.Content.Length;
                             _context.Add(fileVersion);
+                            _context.SaveChanges(); 
 
                             //throw new Exception();
 
@@ -64,9 +65,12 @@ namespace Elinkx.FileStorage.DataLayer
                             result.Changed = DateTime.Now;
                             result.ChangedBy = metadata.ChangedBy;
 
-                            _context.SaveChanges();
-
                             transaction.Commit();
+                        }
+                        else if (setFileRequest.FileId > 0)
+                        {
+                            //case2- do something to write new version when FileId is positive nonzero
+                            
                         }
                     } catch (Exception e)
                     {
