@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Linq;
 using Elinkx.FileStorage.Contracts;
 using Elinkx.FileStorage.Models;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -15,6 +16,7 @@ namespace Elinkx.FileStorage.DataLayer
         {
             connectionString = "server=localhost\\SQLEXPRESS;database=FileStorage;Trusted_Connection=true";
         }
+        
         public SetFileResult SetFile(SetFileRequest setFileRequest)
         {
             using (var _context = new DataContext(connectionString))
@@ -28,7 +30,7 @@ namespace Elinkx.FileStorage.DataLayer
                 {
                     try
                     {
-                        // case1 FileId je 0 - tedy novy zaznam v db
+                        // case1 INSERT - FileId je 0 - tedy novy zaznam v db
                         if (setFileRequest.FileId == 0)
                         {
                             metadata.ContentType = setFileRequest.ContentType;
@@ -69,8 +71,33 @@ namespace Elinkx.FileStorage.DataLayer
                         }
                         else if (setFileRequest.FileId > 0)
                         {
-                            //case2- do something to write new version when FileId is positive nonzero
-                            
+                            //case2- UPDATE do something to write new version when FileId is positive nonzero
+
+                            //get entity by FileID
+                            metadata = _context.Metadata.SingleOrDefault(dbEntry => dbEntry.FileId == setFileRequest.FileId);
+                            metadata.Changed = DateTime.Now;
+                            metadata.ChangedBy = setFileRequest.UserCode;
+                            _context.SaveChanges();
+
+                            fileContent.Content = Encoding.ASCII.GetBytes("some string to test storage in db ..2ndVersion");
+                            _context.Add(fileContent);
+                            _context.SaveChanges();
+
+                            fileVersion.FileId = metadata.FileId;
+                            fileVersion.RowId = fileContent.RowId;
+                            fileVersion.Changed = metadata.Changed;
+                            fileVersion.ChangedBy = metadata.ChangedBy;
+                            fileVersion.Size = fileContent.Content.Length;
+                            _context.Add(fileVersion);
+                            _context.SaveChanges();
+
+                            result.FileId = metadata.FileId;
+                            result.Changed = DateTime.Now;
+                            result.ChangedBy = metadata.ChangedBy;
+
+                            transaction.Commit();     
+
+
                         }
                     } catch (Exception e)
                     {
@@ -83,10 +110,6 @@ namespace Elinkx.FileStorage.DataLayer
                     return result;
                 }
             }
-
-            
-            
         }
-
     }
 }
