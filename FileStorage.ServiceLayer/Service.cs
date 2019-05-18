@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Elinkx.FileStorage.Contracts;
 using Elinkx.FileStorage.DataLayer;
@@ -19,10 +20,26 @@ namespace Elinkx.FileStorage.ServiceLayer
         /// <returns>Returns metadata with generated FileId</returns>
         public SetFileResult SetFile(SetFileRequest fileMetadata)
         {
-            // resit jako jedna transakce v DL.!
+            
             return dataLayer.SetFile(fileMetadata);
         }
 
+        public RejectResult SetReject(SetRejectRequest fileMetadata)
+        {
+            
+            return dataLayer.SetReject(fileMetadata);
+        }
 
+        public List<GetMetadataResult> ReadMetadata(GetMetadata readMetadata)
+        {
+            return dataLayer.GetMetadata(readMetadata);
+        }
+         
+        public GetContentResult GetContent (GetContentRequest getFile)
+        {
+            return dataLayer.GetContent(getFile);
+        }
+        
     }
+
 }
