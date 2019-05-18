@@ -11,7 +11,7 @@ namespace Elinkx.FileStorage.DataLayer
     public class Data
     {
         string connectionString;
-       
+
 
         public Data()
         {
@@ -214,9 +214,9 @@ namespace Elinkx.FileStorage.DataLayer
                             DateTime DtCreated2 = readMetadata.Created2.AddHours(23).AddMinutes(59).AddSeconds(59);
                             var metadata =
                                     (from c in _context.Metadata
-                                     where (c.Created >= readMetadata.Created ) && (c.Created <= DtCreated2)
+                                     where (c.Created >= readMetadata.Created) && (c.Created <= DtCreated2)
                                      select c);
-                        
+
                             foreach (var item in metadata)
                             {
                                 var resultMd = new GetMetadataResult()
@@ -266,12 +266,15 @@ namespace Elinkx.FileStorage.DataLayer
                 {
                     try
                     {
-
+                        fileVersion = _context.FileVersion.Last(dbEntry => dbEntry.FileId == getContent.FileId);
+                        fileContent = _context.FileContent.FirstOrDefault(dbEntry => dbEntry.RowId == fileVersion.RowId);
+                        result.Content = fileContent.Content;
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e.Message + e.StackTrace);
                     }
+
                     return result;
                 }
             }
