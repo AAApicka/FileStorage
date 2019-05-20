@@ -1,22 +1,22 @@
 ﻿using System;
-using System.Text;
 using System.Linq;
 using Elinkx.FileStorage.Contracts;
 using Elinkx.FileStorage.Models;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Collections.Generic;
 
 namespace Elinkx.FileStorage.DataLayer
 {
     public class Data
     {
         string connectionString;
-        DataContext _context;
 
-        public Data()
+        public Data(string connectionString)
         {
-            connectionString = "server=localhost\\SQLEXPRESS;database=FileStorage;Trusted_Connection=true";
+            this.connectionString = connectionString;
         }
         
+        //Set File - new or new version
         public SetFileResult SetFile(SetFileRequest setFileRequest)
         {
             using (var _context = new DataContext(connectionString))
@@ -49,7 +49,7 @@ namespace Elinkx.FileStorage.DataLayer
                             _context.Add(metadata);
                             _context.SaveChanges();
 
-                            fileContent.Content = Encoding.ASCII.GetBytes("some string to test storage in db");
+                            fileContent.Content = setFileRequest.Content;
                             _context.Add(fileContent);
                             _context.SaveChanges();
 
@@ -59,7 +59,7 @@ namespace Elinkx.FileStorage.DataLayer
                             fileVersion.ChangedBy = metadata.ChangedBy;
                             fileVersion.Size = fileContent.Content.Length;
                             _context.Add(fileVersion);
-                            _context.SaveChanges(); 
+                            _context.SaveChanges();
 
                             //throw new Exception();
 
@@ -68,6 +68,7 @@ namespace Elinkx.FileStorage.DataLayer
                             result.ChangedBy = metadata.ChangedBy;
 
                             transaction.Commit();
+
                         }
                         else if (setFileRequest.FileId > 0)
                         {
@@ -79,7 +80,7 @@ namespace Elinkx.FileStorage.DataLayer
                             metadata.ChangedBy = setFileRequest.UserCode;
                             _context.SaveChanges();
 
-                            fileContent.Content = Encoding.ASCII.GetBytes("some string to test storage in db ..2ndVersion");
+                            fileContent.Content = setFileRequest.Content;
                             _context.Add(fileContent);
                             _context.SaveChanges();
 
@@ -95,11 +96,11 @@ namespace Elinkx.FileStorage.DataLayer
                             result.Changed = DateTime.Now;
                             result.ChangedBy = metadata.ChangedBy;
 
-                            transaction.Commit();     
-
+                            transaction.Commit();
 
                         }
-                    } catch (Exception e)
+                    }
+                    catch (Exception e)
                     {
                         transaction.Rollback();
                         Console.WriteLine(e.Message + e.StackTrace);
@@ -111,5 +112,149 @@ namespace Elinkx.FileStorage.DataLayer
                 }
             }
         }
+
+        //Set Reject by File ID
+        public SetRejectResult SetReject(SetRejectRequest setRejectRequest)
+        {
+
+            using (var _context = new DataContext(connectionString))
+            {
+                Metadata metadata = new Metadata();
+                SetRejectResult result = new SetRejectResult();
+
+                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        if (setRejectRequest.FileId == 0)
+                        {
+                            //whatif
+                        }
+                        else if (setRejectRequest.FileId > 0)
+                        {
+                            //get entity by FileID and fill changes
+                            metadata = _context.Metadata.SingleOrDefault(dbEntry => dbEntry.FileId == setRejectRequest.FileId);
+                            metadata.Reject = setRejectRequest.Reject;
+                            metadata.Changed = DateTime.Now;
+                            metadata.ChangedBy = setRejectRequest.UserCode;
+                            _context.SaveChanges();
+                            //set result
+                            result.FileId = metadata.FileId;
+                            result.Reject = metadata.Reject;
+                            result.Changed = DateTime.Now;
+                            result.ChangedBy = metadata.ChangedBy;
+
+                            transaction.Commit();
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        transaction.Rollback();
+                        Console.WriteLine(e.Message + e.StackTrace);
+                        result.FileId = 0;
+                        result.Changed = new DateTime();
+                        result.ChangedBy = "NULL";
+                    }
+                    return result;
+                }
+            }
+
+        }
+        
+        //Get Metadata by Date
+        public List<GetMetadataResult> GetMetadataByDate(GetMetadataByDateRequest getMetadataByDateRequest)
+        {
+            using (var _context = new DataContext(connectionString))
+            {
+                List<GetMetadataResult> result = new List<GetMetadataResult>();
+
+                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        if (getMetadataByDateRequest.FileId > 0)
+                        {
+                            //return single metadata in list
+                        }
+                        else if (getMetadataByDateRequest.FileId == 0)
+                        {
+                            var adjustetCreatedTo = getMetadataByDateRequest.CreatedTo.AddHours(23).AddMinutes(59).AddSeconds(59);
+                            var metadata =
+                                _context.Metadata.Where(dbEntry =>
+                                (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
+                                (dbEntry.Created <= adjustetCreatedTo)).ToList();
+                            foreach (var item in metadata)
+                            {
+                                result.Add(new GetMetadataResult()
+                                {
+                                    Changed = item.Changed,
+                                    ChangedBy = item.ChangedBy,
+                                    ContentType = item.ContentType,
+                                    Created = item.Created,
+                                    CreatedBy = item.CreatedBy,
+                                    Description = item.Description,
+                                    DocumentId = item.DocumentId,
+                                    FileId = item.FileId,
+                                    Name = item.Name,
+                                    Signed = item.Signed,
+                                    SubjectId = item.SubjectId,
+                                    SubtypeId = item.SubtypeId,
+                                    TypeId = item.TypeId
+                                });
+                            }
+                            transaction.Commit();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        transaction.Rollback();
+                        Console.WriteLine(e.Message + e.StackTrace);
+                    }
+                    return result;
+                }
+            }
+
+        }
+
+        //Get File by File ID
+        public GetFileResult GetFile(GetFileRequest getFileRequest)
+        {
+            GetFileResult result = new GetFileResult();
+
+            using (var _context = new DataContext(connectionString))
+            {
+                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        if (getFileRequest.FileId > 0)
+                        {
+                            var lastVersion = (from c in _context.FileVersion
+                                               where c.FileId == getFileRequest.FileId
+                                               select c).Max(c => c.RowId);
+
+                            var lastFile = (from c in _context.FileContent
+                                               where c.RowId == lastVersion
+                                               select c).Single();
+
+                            result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).SingleOrDefault().ChangedBy;
+                            result.Content = lastFile.Content;
+                            transaction.Commit();
+
+                            return result;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        transaction.Rollback();
+                        Console.WriteLine(e.Message + e.StackTrace);
+                    }
+                    return result;
+                }
+            }
+        }
+
     }
 }
+
