@@ -7,7 +7,7 @@ namespace Elinkx.FileStorage.ServiceLayer
 {
     public class Service
     {
-        private readonly Data dataLayer;
+        private readonly IData dataLayer;
 
         //1. Metodu SetReject prejmenovat na Delete a funkce pouze nastaveni na true at programator webklienta vi co to dela
         public Service()

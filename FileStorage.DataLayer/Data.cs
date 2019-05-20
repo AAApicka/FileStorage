@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace Elinkx.FileStorage.DataLayer
 {
     // Dodelat Interface pro Data a pro Service.
-    public class Data
+    public class Data : IData
     {
         string connectionString;
 
@@ -31,7 +31,6 @@ namespace Elinkx.FileStorage.DataLayer
                 {
                     try
                     {
-                        // rozhodit do dvou metod
                         if (setFileRequest.FileId == 0)
                         {
                             metadata.ContentType = setFileRequest.ContentType;
