@@ -9,6 +9,7 @@ namespace Elinkx.FileStorage.ServiceLayer
     {
         private readonly Data dataLayer;
 
+        //1. Metodu SetReject prejmenovat na Delete a funkce pouze nastaveni na true at programator webklienta vi co to dela
         public Service()
         {
             dataLayer = new Data("server=localhost\\SQLEXPRESS;database=FileStorage;Trusted_Connection=true");

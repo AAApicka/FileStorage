@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorage.WebApi", "FileS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorage.ServiceLayer", "FileStorage.ServiceLayer\FileStorage.ServiceLayer.csproj", "{999C7776-7AC0-43EA-BF26-A7D837728FA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileStorage.Models", "FileStorage.Models\FileStorage.Models.csproj", "{9699A068-DD48-4C1C-9CB5-3C9AE07087F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorage.Models", "FileStorage.Models\FileStorage.Models.csproj", "{9699A068-DD48-4C1C-9CB5-3C9AE07087F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -8,5 +8,6 @@ namespace Elinkx.FileStorage.Contracts
         public int FileId { get; set; }
         public DateTime CreatedFrom { get; set; }
         public DateTime CreatedTo { get; set; }
+        public string TypeId { get; set; }
     }
 }

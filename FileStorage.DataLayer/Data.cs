@@ -7,6 +7,7 @@ using System.Collections.Generic;
 
 namespace Elinkx.FileStorage.DataLayer
 {
+    // Dodelat Interface pro Data a pro Service.
     public class Data
     {
         string connectionString;
@@ -15,7 +16,7 @@ namespace Elinkx.FileStorage.DataLayer
         {
             this.connectionString = connectionString;
         }
-        
+
         //Set File - new or new version
         public SetFileResult SetFile(SetFileRequest setFileRequest)
         {
@@ -30,7 +31,7 @@ namespace Elinkx.FileStorage.DataLayer
                 {
                     try
                     {
-                        // case1 INSERT - FileId je 0 - tedy novy zaznam v db
+                        // rozhodit do dvou metod
                         if (setFileRequest.FileId == 0)
                         {
                             metadata.ContentType = setFileRequest.ContentType;
@@ -103,7 +104,7 @@ namespace Elinkx.FileStorage.DataLayer
                     catch (Exception e)
                     {
                         transaction.Rollback();
-                        Console.WriteLine(e.Message + e.StackTrace);
+                        System.Diagnostics.Debug.WriteLine(e.Message + e.StackTrace);
                         result.FileId = 0;
                         result.Changed = new DateTime();
                         result.ChangedBy = "NULL";
@@ -161,7 +162,7 @@ namespace Elinkx.FileStorage.DataLayer
             }
 
         }
-        
+
         //Get Metadata by Date
         public List<GetMetadataResult> GetMetadataByDate(GetMetadataByDateRequest getMetadataByDateRequest)
         {
@@ -173,17 +174,14 @@ namespace Elinkx.FileStorage.DataLayer
                 {
                     try
                     {
-                        if (getMetadataByDateRequest.FileId > 0)
+
+                        var adjustedCreatedTo = getMetadataByDateRequest.CreatedTo.AddHours(23).AddMinutes(59).AddSeconds(59);
+                        if (string.IsNullOrEmpty(getMetadataByDateRequest.TypeId))
                         {
-                            //return single metadata in list
-                        }
-                        else if (getMetadataByDateRequest.FileId == 0)
-                        {
-                            var adjustetCreatedTo = getMetadataByDateRequest.CreatedTo.AddHours(23).AddMinutes(59).AddSeconds(59);
-                            var metadata =
-                                _context.Metadata.Where(dbEntry =>
-                                (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
-                                (dbEntry.Created <= adjustetCreatedTo)).ToList();
+                            var metadata = 
+                           _context.Metadata.Where(dbEntry =>
+                           (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
+                           (dbEntry.Created <= adjustedCreatedTo)).ToList();
                             foreach (var item in metadata)
                             {
                                 result.Add(new GetMetadataResult()
@@ -203,8 +201,35 @@ namespace Elinkx.FileStorage.DataLayer
                                     TypeId = item.TypeId
                                 });
                             }
-                            transaction.Commit();
                         }
+                        else
+                        {
+                            var metadata =
+                                _context.Metadata.Where(dbEntry =>
+                                (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
+                                (dbEntry.Created <= adjustedCreatedTo) && (dbEntry.TypeId == getMetadataByDateRequest.TypeId)).ToList();
+                            foreach (var item in metadata)
+                            {
+                                result.Add(new GetMetadataResult()
+                                {
+                                    Changed = item.Changed,
+                                    ChangedBy = item.ChangedBy,
+                                    ContentType = item.ContentType,
+                                    Created = item.Created,
+                                    CreatedBy = item.CreatedBy,
+                                    Description = item.Description,
+                                    DocumentId = item.DocumentId,
+                                    FileId = item.FileId,
+                                    Name = item.Name,
+                                    Signed = item.Signed,
+                                    SubjectId = item.SubjectId,
+                                    SubtypeId = item.SubtypeId,
+                                    TypeId = item.TypeId
+                                });
+                            }
+                        }
+                        transaction.Commit();
+
                     }
                     catch (Exception e)
                     {
@@ -217,7 +242,7 @@ namespace Elinkx.FileStorage.DataLayer
 
         }
 
-        //Get File by File ID
+        //Get File by File Id or Document Id
         public GetFileResult GetFile(GetFileRequest getFileRequest)
         {
             GetFileResult result = new GetFileResult();
@@ -228,15 +253,33 @@ namespace Elinkx.FileStorage.DataLayer
                 {
                     try
                     {
-                        if (getFileRequest.FileId > 0)
+                        if (getFileRequest.FileId > 0 && getFileRequest.DocumentID == 0)
                         {
                             var lastVersion = (from c in _context.FileVersion
                                                where c.FileId == getFileRequest.FileId
                                                select c).Max(c => c.RowId);
 
                             var lastFile = (from c in _context.FileContent
-                                               where c.RowId == lastVersion
-                                               select c).Single();
+                                            where c.RowId == lastVersion
+                                            select c).Single();
+
+                            result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).SingleOrDefault().ChangedBy;
+                            result.Content = lastFile.Content;
+                            transaction.Commit();
+
+                            return result;
+                        }
+                        else if (getFileRequest.FileId == 0 && getFileRequest.DocumentID > 0)
+                        {
+                            var fileIdquery = (from c in _context.Metadata
+                                               where c.DocumentId == getFileRequest.DocumentID
+                                               select c).Single().FileId;
+                            var lastVersion = (from c in _context.FileVersion
+                                               where c.FileId == fileIdquery
+                                               select c).Max(c => c.RowId);
+                            var lastFile = (from c in _context.FileContent
+                                            where c.RowId == lastVersion
+                                            select c).Single();
 
                             result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).SingleOrDefault().ChangedBy;
                             result.Content = lastFile.Content;
