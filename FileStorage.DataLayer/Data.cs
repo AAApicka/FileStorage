@@ -167,10 +167,6 @@ namespace Elinkx.FileStorage.DataLayer
                 }
             }
         }
-        #region Methods
-
-       
-
 
         private void QueryFileContentByDocumentId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
         {
@@ -293,7 +289,6 @@ namespace Elinkx.FileStorage.DataLayer
                                        (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
                                        (dbEntry.Created <= adjustedCreatedTo)).ToList();
         }
-        #endregion
     }
 }
 
