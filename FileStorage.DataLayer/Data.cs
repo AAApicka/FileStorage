@@ -32,7 +32,9 @@ namespace Elinkx.FileStorage.DataLayer
                         {
                             SetNewMetadata(setFileRequest, _context, metadata);
                             SetNewContent(setFileRequest, _context, fileContent);
+                            _context.SaveChanges();
                             SetNewVersion(_context, metadata, fileVersion, fileContent);
+                            _context.SaveChanges();
                             SetResult(metadata, result);
                             transaction.Commit();
                         }
@@ -42,8 +44,11 @@ namespace Elinkx.FileStorage.DataLayer
                             if (metadata != null)
                             {
                                 EditMetadata(setFileRequest, _context, metadata);
+                                _context.SaveChanges();
                                 SetNewContent(setFileRequest, _context, fileContent);
+                                _context.SaveChanges();
                                 SetNewVersion(_context, metadata, fileVersion, fileContent);
+                                _context.SaveChanges();
                                 SetResult(metadata, result);
                                 transaction.Commit();
                             }
@@ -83,6 +88,7 @@ namespace Elinkx.FileStorage.DataLayer
                         else
                         {
                             SetReject(setRejectRequest, _context, metadata);
+                            _context.SaveChanges();
                             SetResult(metadata, result);
                             transaction.Commit();
                         }
@@ -168,7 +174,7 @@ namespace Elinkx.FileStorage.DataLayer
             }
         }
 
-        private void QueryFileContentByDocumentId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
+        private static void QueryFileContentByDocumentId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
         {
             var fileIdquery = (from c in _context.Metadata
                                where c.DocumentId == getFileRequest.DocumentID
@@ -183,7 +189,7 @@ namespace Elinkx.FileStorage.DataLayer
             result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).Single().ChangedBy;
             result.Content = lastFile.Content;
         }
-        private void QueryFileContentByFileId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
+        private static void QueryFileContentByFileId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
         {
             var lastVersion = (from c in _context.FileVersion
                                where c.FileId == getFileRequest.FileId
@@ -196,25 +202,25 @@ namespace Elinkx.FileStorage.DataLayer
             result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).Single().ChangedBy;
             result.Content = lastFile.Content;
         }
-        private void EditMetadata(SetFileRequest setFileRequest, DataContext _context, Metadata metadata)
+        private static void EditMetadata(SetFileRequest setFileRequest, DataContext _context, Metadata metadata)
         {
             metadata.Changed = DateTime.Now;
             metadata.ChangedBy = setFileRequest.UserCode;
-            _context.SaveChanges();
         }
-        private void SetResult(Metadata metadata, SetFileResult result)
+        private static void SetResult(Metadata metadata, SetFileResult result)
         {
             result.FileId = metadata.FileId;
             result.Changed = DateTime.Now;
             result.ChangedBy = metadata.ChangedBy;
         }
-        private void SetResult(Metadata metadata, SetRejectResult result)
+        private static void SetResult(Metadata metadata, SetRejectResult result)
         {
             result.FileId = metadata.FileId;
             result.Changed = DateTime.Now;
             result.ChangedBy = metadata.ChangedBy;
+            result.Reject = metadata.Reject;
         }
-        private void SetNewVersion(DataContext _context, Metadata metadata, FileVersion fileVersion, FileContent fileContent)
+        private static void SetNewVersion(DataContext _context, Metadata metadata, FileVersion fileVersion, FileContent fileContent)
         {
             fileVersion.FileId = metadata.FileId;
             fileVersion.RowId = fileContent.RowId;
@@ -222,15 +228,14 @@ namespace Elinkx.FileStorage.DataLayer
             fileVersion.ChangedBy = metadata.ChangedBy;
             fileVersion.Size = fileContent.Content.Length;
             _context.Add(fileVersion);
-            _context.SaveChanges();
         }
-        private void SetNewContent(SetFileRequest setFileRequest, DataContext _context, FileContent fileContent)
+        private static void SetNewContent(SetFileRequest setFileRequest, DataContext _context, FileContent fileContent)
         {
             fileContent.Content = setFileRequest.Content;
             _context.Add(fileContent);
-            _context.SaveChanges();
+            
         }
-        private void SetNewMetadata(SetFileRequest setFileRequest, DataContext _context, Metadata metadata)
+        private static void SetNewMetadata(SetFileRequest setFileRequest, DataContext _context, Metadata metadata)
         {
             metadata.ContentType = setFileRequest.ContentType;
             metadata.SubjectId = setFileRequest.SubjectId;
@@ -246,22 +251,21 @@ namespace Elinkx.FileStorage.DataLayer
             metadata.Changed = DateTime.Now;
             metadata.ChangedBy = setFileRequest.UserCode;
             _context.Add(metadata);
-            _context.SaveChanges();
         }
-        private void SetReject(SetRejectRequest setRejectRequest, DataContext _context, Metadata metadata)
+        private static void SetReject(SetRejectRequest setRejectRequest, DataContext _context, Metadata metadata)
         {
             metadata.Reject = setRejectRequest.Reject;
             metadata.Changed = DateTime.Now;
             metadata.ChangedBy = setRejectRequest.UserCode;
-            _context.SaveChanges();
+            
         }
-        private List<Metadata> QueryByDateAndTypeId(GetMetadataByDateRequest getMetadataByDateRequest, DataContext _context, DateTime adjustedCreatedTo)
+        private static List<Metadata> QueryByDateAndTypeId(GetMetadataByDateRequest getMetadataByDateRequest, DataContext _context, DateTime adjustedCreatedTo)
         {
             return _context.Metadata.Where(dbEntry =>
                 (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
                 (dbEntry.Created <= adjustedCreatedTo) && (dbEntry.TypeId == getMetadataByDateRequest.TypeId)).ToList();
         }
-        private void MapToResultList(List<GetMetadataResult> result, List<Metadata> metadata)
+        private static void MapToResultList(List<GetMetadataResult> result, List<Metadata> metadata)
         {
             foreach (var item in metadata)
             {
