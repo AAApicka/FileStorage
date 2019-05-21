@@ -10,12 +10,12 @@ namespace Elinkx.FileStorage.DataLayer
     public class Data : IDataLayer
     {
         string connectionString;
-
+        //Constructor
         public Data(string connectionString)
         {
             this.connectionString = connectionString;
         }
-
+        //Set new file or new version of the file
         public SetFileResult SetFile(SetFileRequest setFileRequest)
         {
             using (var _context = new DataContext(connectionString))
@@ -49,7 +49,7 @@ namespace Elinkx.FileStorage.DataLayer
                             }
                             else
                             {
-                                throw new Exception("metadata is null, couldn't find object with that FileId");
+                                throw new Exception("metadata is null, couldn't find data with that FileId");
                             }
                         }
                     }
@@ -62,22 +62,163 @@ namespace Elinkx.FileStorage.DataLayer
                 }
             }
         }
+        //Set Reject by File ID (SoftDelete)
+        public SetRejectResult Delete(SetRejectRequest setRejectRequest)
+        {
 
-        private static void EditMetadata(SetFileRequest setFileRequest, DataContext _context, Metadata metadata)
+            using (var _context = new DataContext(connectionString))
+            {
+                Metadata metadata = new Metadata();
+                SetRejectResult result = new SetRejectResult();
+
+                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        metadata = _context.Metadata.Find(setRejectRequest.FileId);
+                        if (metadata == null)
+                        {
+                            throw new Exception("metadata is null, couldn't find data with that FileId");
+                        }
+                        else
+                        {
+                            SetReject(setRejectRequest, _context, metadata);
+                            SetResult(metadata, result);
+                            transaction.Commit();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        transaction.Rollback();
+                        System.Diagnostics.Debug.WriteLine(e.Message + e.StackTrace);
+                    }
+                    return result;
+                }
+            }
+
+        }
+        //Get Metadata by Date and optional TypeId
+        public List<GetMetadataResult> GetMetadataByDate(GetMetadataByDateRequest getMetadataByDateRequest)
+        {
+            using (var _context = new DataContext(connectionString))
+            {
+                List<GetMetadataResult> result = new List<GetMetadataResult>();
+
+                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        var adjustedCreatedTo = getMetadataByDateRequest.CreatedTo.AddHours(23).AddMinutes(59).AddSeconds(59);
+                        if (string.IsNullOrEmpty(getMetadataByDateRequest.TypeId))
+                        {
+                            List<Metadata> metadata = QueryByDate(getMetadataByDateRequest, _context, adjustedCreatedTo);
+                            MapToResultList(result, metadata);
+                        }
+                        else
+                        {
+                            List<Metadata> metadata = QueryByDateAndTypeId(getMetadataByDateRequest, _context, adjustedCreatedTo);
+                            MapToResultList(result, metadata);
+                        }
+                        transaction.Commit();
+                    }
+                    catch (Exception e)
+                    {
+                        transaction.Rollback();
+                        System.Diagnostics.Debug.WriteLine(e.Message + e.StackTrace);
+                    }
+                    return result;
+                }
+            }
+
+        }
+        //Get File Content by File Id or Document Id
+        public GetFileResult GetFile(GetFileRequest getFileRequest)
+        {
+            GetFileResult result = new GetFileResult();
+
+            using (var _context = new DataContext(connectionString))
+            {
+                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                {
+                    try
+                    {
+
+                        if (getFileRequest.FileId > 0 && getFileRequest.DocumentID == 0)
+                        {
+                            QueryFileContentByFileId(getFileRequest, result, _context);
+                            transaction.Commit();
+
+                            return result;
+                        }
+                        else if (getFileRequest.FileId == 0 && getFileRequest.DocumentID > 0)
+                        {
+                            QueryFileContentByDocumentId(getFileRequest, result, _context);
+                            transaction.Commit();
+
+                            return result;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        transaction.Rollback();
+                        System.Diagnostics.Debug.WriteLine(e.Message + e.StackTrace);
+                    }
+                    return result;
+                }
+            }
+        }
+        #region Methods
+
+       
+
+
+        private void QueryFileContentByDocumentId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
+        {
+            var fileIdquery = (from c in _context.Metadata
+                               where c.DocumentId == getFileRequest.DocumentID
+                               select c).Single().FileId;
+            var lastVersion = (from c in _context.FileVersion
+                               where c.FileId == fileIdquery
+                               select c).Max(c => c.RowId);
+            var lastFile = (from c in _context.FileContent
+                            where c.RowId == lastVersion
+                            select c).Single();
+
+            result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).Single().ChangedBy;
+            result.Content = lastFile.Content;
+        }
+        private void QueryFileContentByFileId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
+        {
+            var lastVersion = (from c in _context.FileVersion
+                               where c.FileId == getFileRequest.FileId
+                               select c).Max(c => c.RowId);
+
+            var lastFile = (from c in _context.FileContent
+                            where c.RowId == lastVersion
+                            select c).Single();
+
+            result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).Single().ChangedBy;
+            result.Content = lastFile.Content;
+        }
+        private void EditMetadata(SetFileRequest setFileRequest, DataContext _context, Metadata metadata)
         {
             metadata.Changed = DateTime.Now;
             metadata.ChangedBy = setFileRequest.UserCode;
             _context.SaveChanges();
         }
-
-        private static void SetResult(Metadata metadata, SetFileResult result)
+        private void SetResult(Metadata metadata, SetFileResult result)
         {
             result.FileId = metadata.FileId;
             result.Changed = DateTime.Now;
             result.ChangedBy = metadata.ChangedBy;
         }
-
-        private static void SetNewVersion(DataContext _context, Metadata metadata, FileVersion fileVersion, FileContent fileContent)
+        private void SetResult(Metadata metadata, SetRejectResult result)
+        {
+            result.FileId = metadata.FileId;
+            result.Changed = DateTime.Now;
+            result.ChangedBy = metadata.ChangedBy;
+        }
+        private void SetNewVersion(DataContext _context, Metadata metadata, FileVersion fileVersion, FileContent fileContent)
         {
             fileVersion.FileId = metadata.FileId;
             fileVersion.RowId = fileContent.RowId;
@@ -87,15 +228,13 @@ namespace Elinkx.FileStorage.DataLayer
             _context.Add(fileVersion);
             _context.SaveChanges();
         }
-
-        private static void SetNewContent(SetFileRequest setFileRequest, DataContext _context, FileContent fileContent)
+        private void SetNewContent(SetFileRequest setFileRequest, DataContext _context, FileContent fileContent)
         {
             fileContent.Content = setFileRequest.Content;
             _context.Add(fileContent);
             _context.SaveChanges();
         }
-
-        private static void SetNewMetadata(SetFileRequest setFileRequest, DataContext _context, Metadata metadata)
+        private void SetNewMetadata(SetFileRequest setFileRequest, DataContext _context, Metadata metadata)
         {
             metadata.ContentType = setFileRequest.ContentType;
             metadata.SubjectId = setFileRequest.SubjectId;
@@ -113,191 +252,48 @@ namespace Elinkx.FileStorage.DataLayer
             _context.Add(metadata);
             _context.SaveChanges();
         }
-
-        //Set Reject by File ID
-        public SetRejectResult Delete(SetRejectRequest setRejectRequest)
+        private void SetReject(SetRejectRequest setRejectRequest, DataContext _context, Metadata metadata)
         {
-
-            using (var _context = new DataContext(connectionString))
-            {
-                Metadata metadata = new Metadata();
-                SetRejectResult result = new SetRejectResult();
-
-                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
-                {
-                    try
-                    {
-                        if (setRejectRequest.FileId == 0)
-                        {
-                            //whatif
-                        }
-                        else if (setRejectRequest.FileId > 0)
-                        {
-                            //get entity by FileID and fill changes
-                            metadata = _context.Metadata.SingleOrDefault(dbEntry => dbEntry.FileId == setRejectRequest.FileId);
-                            metadata.Reject = setRejectRequest.Reject;
-                            metadata.Changed = DateTime.Now;
-                            metadata.ChangedBy = setRejectRequest.UserCode;
-                            _context.SaveChanges();
-                            //set result
-                            result.FileId = metadata.FileId;
-                            result.Reject = metadata.Reject;
-                            result.Changed = DateTime.Now;
-                            result.ChangedBy = metadata.ChangedBy;
-
-                            transaction.Commit();
-
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        transaction.Rollback();
-                        Console.WriteLine(e.Message + e.StackTrace);
-                        result.FileId = 0;
-                        result.Changed = new DateTime();
-                        result.ChangedBy = "NULL";
-                    }
-                    return result;
-                }
-            }
-
+            metadata.Reject = setRejectRequest.Reject;
+            metadata.Changed = DateTime.Now;
+            metadata.ChangedBy = setRejectRequest.UserCode;
+            _context.SaveChanges();
         }
-
-        //Get Metadata by Date
-        public List<GetMetadataResult> GetMetadataByDate(GetMetadataByDateRequest getMetadataByDateRequest)
+        private List<Metadata> QueryByDateAndTypeId(GetMetadataByDateRequest getMetadataByDateRequest, DataContext _context, DateTime adjustedCreatedTo)
         {
-            using (var _context = new DataContext(connectionString))
-            {
-                List<GetMetadataResult> result = new List<GetMetadataResult>();
-
-                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
-                {
-                    try
-                    {
-
-                        var adjustedCreatedTo = getMetadataByDateRequest.CreatedTo.AddHours(23).AddMinutes(59).AddSeconds(59);
-                        if (string.IsNullOrEmpty(getMetadataByDateRequest.TypeId))
-                        {
-                            var metadata =
-                           _context.Metadata.Where(dbEntry =>
-                           (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
-                           (dbEntry.Created <= adjustedCreatedTo)).ToList();
-                            foreach (var item in metadata)
-                            {
-                                result.Add(new GetMetadataResult()
-                                {
-                                    Changed = item.Changed,
-                                    ChangedBy = item.ChangedBy,
-                                    ContentType = item.ContentType,
-                                    Created = item.Created,
-                                    CreatedBy = item.CreatedBy,
-                                    Description = item.Description,
-                                    DocumentId = item.DocumentId,
-                                    FileId = item.FileId,
-                                    Name = item.Name,
-                                    Signed = item.Signed,
-                                    SubjectId = item.SubjectId,
-                                    SubtypeId = item.SubtypeId,
-                                    TypeId = item.TypeId
-                                });
-                            }
-                        }
-                        else
-                        {
-                            var metadata =
-                                _context.Metadata.Where(dbEntry =>
-                                (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
-                                (dbEntry.Created <= adjustedCreatedTo) && (dbEntry.TypeId == getMetadataByDateRequest.TypeId)).ToList();
-                            foreach (var item in metadata)
-                            {
-                                result.Add(new GetMetadataResult()
-                                {
-                                    Changed = item.Changed,
-                                    ChangedBy = item.ChangedBy,
-                                    ContentType = item.ContentType,
-                                    Created = item.Created,
-                                    CreatedBy = item.CreatedBy,
-                                    Description = item.Description,
-                                    DocumentId = item.DocumentId,
-                                    FileId = item.FileId,
-                                    Name = item.Name,
-                                    Signed = item.Signed,
-                                    SubjectId = item.SubjectId,
-                                    SubtypeId = item.SubtypeId,
-                                    TypeId = item.TypeId
-                                });
-                            }
-                        }
-                        transaction.Commit();
-
-                    }
-                    catch (Exception e)
-                    {
-                        transaction.Rollback();
-                        Console.WriteLine(e.Message + e.StackTrace);
-                    }
-                    return result;
-                }
-            }
-
+            return _context.Metadata.Where(dbEntry =>
+                (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
+                (dbEntry.Created <= adjustedCreatedTo) && (dbEntry.TypeId == getMetadataByDateRequest.TypeId)).ToList();
         }
-
-        //Get File by File Id or Document Id
-        public GetFileResult GetFile(GetFileRequest getFileRequest)
+        private void MapToResultList(List<GetMetadataResult> result, List<Metadata> metadata)
         {
-            GetFileResult result = new GetFileResult();
-
-            using (var _context = new DataContext(connectionString))
+            foreach (var item in metadata)
             {
-                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                result.Add(new GetMetadataResult()
                 {
-                    try
-                    {
-                        if (getFileRequest.FileId > 0 && getFileRequest.DocumentID == 0)
-                        {
-                            var lastVersion = (from c in _context.FileVersion
-                                               where c.FileId == getFileRequest.FileId
-                                               select c).Max(c => c.RowId);
-
-                            var lastFile = (from c in _context.FileContent
-                                            where c.RowId == lastVersion
-                                            select c).Single();
-
-                            result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).SingleOrDefault().ChangedBy;
-                            result.Content = lastFile.Content;
-                            transaction.Commit();
-
-                            return result;
-                        }
-                        else if (getFileRequest.FileId == 0 && getFileRequest.DocumentID > 0)
-                        {
-                            var fileIdquery = (from c in _context.Metadata
-                                               where c.DocumentId == getFileRequest.DocumentID
-                                               select c).Single().FileId;
-                            var lastVersion = (from c in _context.FileVersion
-                                               where c.FileId == fileIdquery
-                                               select c).Max(c => c.RowId);
-                            var lastFile = (from c in _context.FileContent
-                                            where c.RowId == lastVersion
-                                            select c).Single();
-
-                            result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).SingleOrDefault().ChangedBy;
-                            result.Content = lastFile.Content;
-                            transaction.Commit();
-
-                            return result;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        transaction.Rollback();
-                        Console.WriteLine(e.Message + e.StackTrace);
-                    }
-                    return result;
-                }
+                    Changed = item.Changed,
+                    ChangedBy = item.ChangedBy,
+                    ContentType = item.ContentType,
+                    Created = item.Created,
+                    CreatedBy = item.CreatedBy,
+                    Description = item.Description,
+                    DocumentId = item.DocumentId,
+                    FileId = item.FileId,
+                    Name = item.Name,
+                    Signed = item.Signed,
+                    SubjectId = item.SubjectId,
+                    SubtypeId = item.SubtypeId,
+                    TypeId = item.TypeId
+                });
             }
         }
-
+        private List<Metadata> QueryByDate(GetMetadataByDateRequest getMetadataByDateRequest, DataContext _context, DateTime adjustedCreatedTo)
+        {
+            return _context.Metadata.Where(dbEntry =>
+                                       (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
+                                       (dbEntry.Created <= adjustedCreatedTo)).ToList();
+        }
+        #endregion
     }
 }
 

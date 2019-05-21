@@ -9,7 +9,7 @@ namespace Elinkx.FileStorage.Controllers
     [ApiController]
     public class FileController : ControllerBase
     {
-        private readonly Service service;
+        private readonly IService service;
 
         public FileController()
         {
@@ -20,7 +20,7 @@ namespace Elinkx.FileStorage.Controllers
         {
             return service.SetFile(setFileRequest);
         }
-        [Route("setreject")]
+        [Route("delete")]
         public SetRejectResult Delete(SetRejectRequest setRejectRequest)
         {
             return service.Delete(setRejectRequest);

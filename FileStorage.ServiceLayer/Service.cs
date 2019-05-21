@@ -5,7 +5,7 @@ using Elinkx.FileStorage.DataLayer;
 
 namespace Elinkx.FileStorage.ServiceLayer
 {
-    public class Service
+    public class Service:IService
     {
         private readonly IDataLayer dataLayer;
 
