@@ -5,10 +5,10 @@ using System.Text;
 
 namespace Elinkx.FileStorage.DataLayer
 {
-    public interface IData
+    public interface IDataLayer
     {
         SetFileResult SetFile(SetFileRequest setFileRequest);
-        SetRejectResult SetReject(SetRejectRequest setRejectRequest);
+        SetRejectResult Delete(SetRejectRequest setRejectRequest);
         List<GetMetadataResult> GetMetadataByDate(GetMetadataByDateRequest getMetadataByDateRequest);
         GetFileResult GetFile(GetFileRequest getFileRequest);
     }

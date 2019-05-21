@@ -21,9 +21,9 @@ namespace Elinkx.FileStorage.Controllers
             return service.SetFile(setFileRequest);
         }
         [Route("setreject")]
-        public SetRejectResult SetReject(SetRejectRequest setRejectRequest)
+        public SetRejectResult Delete(SetRejectRequest setRejectRequest)
         {
-            return service.SetReject(setRejectRequest);
+            return service.Delete(setRejectRequest);
         }
         [Route("getmetadata")]
         public List<GetMetadataResult> GetMetadataByDate(GetMetadataByDateRequest getMetadataByDateRequest)

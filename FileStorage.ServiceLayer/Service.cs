@@ -7,7 +7,7 @@ namespace Elinkx.FileStorage.ServiceLayer
 {
     public class Service
     {
-        private readonly IData dataLayer;
+        private readonly IDataLayer dataLayer;
 
         //1. Metodu SetReject prejmenovat na Delete a funkce pouze nastaveni na true at programator webklienta vi co to dela
         public Service()
@@ -27,9 +27,9 @@ namespace Elinkx.FileStorage.ServiceLayer
         /// </summary>
         /// <param name="setRejectRequest"></param>
         /// <returns>Returns metadata with new Reject value</returns>
-        public SetRejectResult SetReject(SetRejectRequest setRejectRequest)
+        public SetRejectResult Delete(SetRejectRequest setRejectRequest)
         {
-            return dataLayer.SetReject(setRejectRequest);
+            return dataLayer.Delete(setRejectRequest);
         }
         /// <summary>
         /// Gets List of Metadata 
