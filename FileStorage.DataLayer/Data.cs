@@ -157,28 +157,17 @@ namespace Elinkx.FileStorage.DataLayer
 
                             return result;
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        transaction.Rollback();
-                        System.Diagnostics.Debug.WriteLine(e.Message + e.StackTrace);
-                    }
-                    return result;
-                }
-            }
-        }
-
-        private void QueryFileContentByDocumentId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
-        {
-            var fileIdquery = (from c in _context.Metadata
-                               where c.DocumentId == getFileRequest.DocumentID
-                               select c).Single().FileId;
-            var lastVersion = (from c in _context.FileVersion
-                               where c.FileId == fileIdquery
-                               select c).Max(c => c.RowId);
-            var lastFile = (from c in _context.FileContent
-                            where c.RowId == lastVersion
-                            select c).Single();
+                        else if (getFileRequest.FileId == 0 && getFileRequest.DocumentID > 0)
+                        {
+                            var fileIdquery = (from c in _context.Metadata
+                                               where c.DocumentId == getFileRequest.DocumentID
+                                               select c).Single().FileId;
+                            var lastVersion = (from c in _context.FileVersion
+                                               where c.FileId == fileIdquery
+                                               select c).Max(c => c.RowId);
+                            var lastFile = (from c in _context.FileContent
+                                            where c.RowId == lastVersion
+                                            select c).Single();
 
             result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).Single().ChangedBy;
             result.Content = lastFile.Content;
@@ -289,6 +278,7 @@ namespace Elinkx.FileStorage.DataLayer
                                        (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
                                        (dbEntry.Created <= adjustedCreatedTo)).ToList();
         }
+
     }
 }
 
