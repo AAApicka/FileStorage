@@ -283,7 +283,7 @@ namespace Elinkx.FileStorage.DataLayer
                 });
             }
         }
-        private List<Metadata> QueryByDate(GetMetadataByDateRequest getMetadataByDateRequest, DataContext _context, DateTime adjustedCreatedTo)
+        private static List<Metadata> QueryByDate(GetMetadataByDateRequest getMetadataByDateRequest, DataContext _context, DateTime adjustedCreatedTo)
         {
             return _context.Metadata.Where(dbEntry =>
                                        (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
