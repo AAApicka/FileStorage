@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Elinkx.FileStorage.Models
+namespace Elinkx.FileStorage.DataLayer.Entities
 {
     [Table("Metadata")]
     public class Metadata
@@ -23,5 +23,7 @@ namespace Elinkx.FileStorage.Models
         public DateTime Created { get; set; }
         public string ChangedBy { get; set; }
         public DateTime Changed { get; set; }
+
+        public List<FileVersion> FileVersion { get; set; }
     }
 }

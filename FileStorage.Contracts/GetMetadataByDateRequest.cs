@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Elinkx.FileStorage.Contracts
 {
-    public class GetMetadataByDateRequest
+    public class GetMetadataRequest
     {
         public int FileId { get; set; }
         public DateTime CreatedFrom { get; set; }

@@ -2,6 +2,7 @@
 using Elinkx.FileStorage.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using Elinkx.FileStorage.DataLayer;
 
 namespace Elinkx.FileStorage.Controllers
 {
@@ -9,31 +10,51 @@ namespace Elinkx.FileStorage.Controllers
     [ApiController]
     public class FileController : ControllerBase
     {
-        private readonly IService service;
+        private readonly IServiceLayer _service;
 
-        public FileController()
+        public FileController(IServiceLayer service)
         {
-            service = new Service();
-        } 
-        [Route("setfile")]
-        public SetFileResult SetFile(SetFileRequest setFileRequest)
-        {
-            return service.SetFile(setFileRequest);
+            _service = service;
         }
+
+        /// <summary>
+        /// Service method call. Inserts new entry into the database or adds new version
+        /// </summary>
+        /// <param name="insertRequest">Required contract specification</param>
+        /// <returns>Result of operation</returns>
+        [Route("insert")]
+        public InsertResult Insert(InsertRequest insertRequest)
+        {
+            return _service.Insert(insertRequest);
+        }
+
+        /// <summary>
+        /// Service method call. Updates entry in the database
+        /// </summary>
+        /// <param name="updateRequest">Required contract specification</param>
+        /// <returns>Result of operation</returns>
+        [Route("update")]
+        public UpdateResult Update(UpdateRequest updateRequest)
+        {
+            return _service.Update(updateRequest);
+        }
+
         [Route("delete")]
-        public SetRejectResult Delete(SetRejectRequest setRejectRequest)
+        public DeleteResult Delete(DeleteRequest deleteRequest)
         {
-            return service.Delete(setRejectRequest);
+            return _service.Delete(deleteRequest);
         }
+
         [Route("getmetadata")]
-        public List<GetMetadataResult> GetMetadataByDate(GetMetadataByDateRequest getMetadataByDateRequest)
+        public IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest)
         {
-            return service.GetMetadataByDate(getMetadataByDateRequest);
+            return _service.GetMetadata(getMetadataRequest);
         }
+
         [Route("getfile")]
         public GetFileResult GetFile(GetFileRequest getFileRequest)
         {
-            return service.GetFile(getFileRequest);
+            return _service.GetFile(getFileRequest);
         }
     }
 

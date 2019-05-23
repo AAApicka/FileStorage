@@ -1,19 +1,15 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
-using Elinkx.FileStorage.Models;
+using Elinkx.FileStorage.DataLayer.Entities;
 
 namespace Elinkx.FileStorage.DataLayer
 {
     public class DataContext : DbContext
     {
-        string comSetup;
-        public DataContext(string comSetup)
+        public DataContext(DbContextOptions<DataContext> options)
+      : base(options)
         {
-            this.comSetup = comSetup;
-        }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer(comSetup);
+
         }
         public DbSet<Metadata> Metadata { get; set; }
         public DbSet<FileVersion> FileVersion { get; set; }

@@ -1,9 +1,7 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-
+﻿
 namespace Elinkx.FileStorage.Contracts
 {
-    public class SetFileRequest
+    public class InsertRequest
     {
         public int FileId { get; set; }
         public string ContentType { get; set; }

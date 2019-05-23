@@ -3,10 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Elinkx.FileStorage.Contracts
 {
-    public class SetRejectResult
+    public class UpdateResult:ResultBase
     {
         public int FileId { get; set; }
-        public bool Reject { get; set; }
         public DateTime Changed { get; set; }
         public string ChangedBy { get; set; }
     }
