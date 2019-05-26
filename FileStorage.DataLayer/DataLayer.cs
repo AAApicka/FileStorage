@@ -62,12 +62,33 @@ namespace Elinkx.FileStorage.DataLayer
             _context.Dispose();
             return result;
         }
-
-
         public UpdateResult Update(UpdateRequest updateRequest)
         {
             //update only received fields from contract
-            throw new NotImplementedException();
+            // only updates if request is non zero non null or non empty
+            metadata = _context.Metadata.Find(updateRequest.FileId);
+            UpdateResult result = new UpdateResult();
+            transaction = _context.Database.BeginTransaction();
+            metadata.ContentType = updateRequest.ContentType.Length > 0 ? updateRequest.ContentType : metadata.ContentType;
+            metadata.SubjectId = updateRequest.SubjectId != 0 ? updateRequest.SubjectId : metadata.SubjectId;
+            metadata.Name = updateRequest.Name.Length > 0 ? updateRequest.Name : metadata.Name;
+            metadata.Description = updateRequest.Description;
+            metadata.DocumentId = updateRequest.DocumentId;
+            metadata.TypeId = updateRequest.TypeId;
+            metadata.SubtypeId = updateRequest.SubtypeId;
+            metadata.Signed = updateRequest.Signed;
+            metadata.Reject = false;
+            metadata.Changed = DateTime.Now;
+            metadata.ChangedBy = updateRequest.UserCode;
+            _context.SaveChanges();
+            result.FileId = metadata.FileId;
+            result.Changed = metadata.Changed;
+            result.ChangedBy = metadata.ChangedBy;
+            result.ResultType = ResultTypes.Updated;
+            transaction.Commit();
+            transaction.Dispose();
+            _context.Dispose();
+            return result;
         }
         public DeleteResult Delete(DeleteRequest deleteRequest)
         {

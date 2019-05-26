@@ -10,5 +10,7 @@ namespace Elinkx.FileStorage.DataLayer
         DeleteResult Delete(DeleteRequest deleteRequest);
         IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest);
         GetFileResult GetFile(GetFileRequest getFileRequest);
+        bool FileIdExists(int fileId);
+        void RollBack();
     }
 }

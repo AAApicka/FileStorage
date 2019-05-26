@@ -17,12 +17,48 @@ namespace Elinkx.FileStorage.ServiceLayer
 
         public InsertResult Insert(InsertRequest insertRequest)
         {
-            return _dataLayer.Insert(insertRequest);
+            try
+            {
+                return _dataLayer.Insert(insertRequest);
+            }
+            catch (Exception)
+            {
+                _dataLayer.RollBack();
+                return new InsertResult()
+                {
+                    ResultType = ResultTypes.NotInserted
+                };
+
+            }
+
         }
 
         public UpdateResult Update(UpdateRequest updateRequest)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (_dataLayer.FileIdExists(updateRequest.FileId))
+                {
+                    return _dataLayer.Update(updateRequest);
+                }
+                else
+                {
+                    return new UpdateResult()
+                    {
+                        ResultType = ResultTypes.NotUpdated
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                _dataLayer.RollBack();
+                return new UpdateResult()
+                {
+                    ResultType = ResultTypes.NotUpdated
+                };
+
+            }
+
         }
 
         public DeleteResult Delete(DeleteRequest deleteRequest)
