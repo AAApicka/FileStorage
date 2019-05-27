@@ -19,10 +19,6 @@ namespace Elinkx.FileStorage.DataLayer
             _context = context;
         }
 
- 
-        
-        // helper methods
-        // only this one works at the moment
         public InsertResult Insert(InsertRequest insertRequest)
         {
             metadata = new Metadata();
@@ -131,8 +127,7 @@ namespace Elinkx.FileStorage.DataLayer
         }
 
 
-
-
+        // Old Query functions
         //    //Set Reject by File ID (SoftDelete)
         //    public DeleteResult Delete(DeleteRequest setRejectRequest)
         //    {
@@ -222,34 +217,35 @@ namespace Elinkx.FileStorage.DataLayer
         //    }
 
 
-        //    private void QueryFileContentByDocumentId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
-        //    {
-        //        var fileIdquery = (from c in _context.Metadata
-        //                           where c.DocumentId == getFileRequest.DocumentID
-        //                           select c).Single().FileId;
-        //        var lastVersion = (from c in _context.FileVersion
-        //                           where c.FileId == fileIdquery
-        //                           select c).Max(c => c.RowId);
-        //        var lastFile = (from c in _context.FileContent
-        //                        where c.RowId == lastVersion
-        //                        select c).Single();
+        //private void QueryFileContentByDocumentId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
+        //{
+        //    var fileIdquery = (from c in _context.Metadata
+        //                       where c.DocumentId == getFileRequest.DocumentID
+        //                       select c).Single().FileId;
+        //    var lastVersion = (from c in _context.FileVersion
+        //                       where c.FileId == fileIdquery
+        //                       select c).Max(c => c.RowId);
+        //    var lastFile = (from c in _context.FileContent
+        //                    where c.RowId == lastVersion
+        //                    select c).Single();
 
-        //        result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).Single().ChangedBy;
-        //        result.Content = lastFile.Content;
-        //    }
-        //    private void QueryFileContentByFileId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
-        //    {
-        //        var lastVersion = (from c in _context.FileVersion
-        //                           where c.FileId == getFileRequest.FileId
-        //                           select c).Max(c => c.RowId);
+        //    result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).Single().ChangedBy;
+        //    result.Content = lastFile.Content;
+        //}
 
-        //        var lastFile = (from c in _context.FileContent
-        //                        where c.RowId == lastVersion
-        //                        select c).Single();
+        //private void QueryFileContentByFileId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
+        //{
+        //    var lastVersion = (from c in _context.FileVersion
+        //                       where c.FileId == getFileRequest.FileId
+        //                       select c).Max(c => c.RowId);
 
-        //        result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).Single().ChangedBy;
-        //        result.Content = lastFile.Content;
-        //    }
+        //    var lastFile = (from c in _context.FileContent
+        //                    where c.RowId == lastVersion
+        //                    select c).Single();
+
+        //    result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).Single().ChangedBy;
+        //    result.Content = lastFile.Content;
+        //}
         //    private void EditMetadata(InsertRequest setFileRequest, Metadata metadata)
         //    {
         //        metadata.Changed = DateTime.Now;
