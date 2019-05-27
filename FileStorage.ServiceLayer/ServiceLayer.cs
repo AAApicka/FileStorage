@@ -5,7 +5,7 @@ using Elinkx.FileStorage.DataLayer;
 
 namespace Elinkx.FileStorage.ServiceLayer
 {
-    public class ServiceLayer : IServiceLayer
+    public class ServiceLayer: IServiceLayer
     {
         private readonly IDataLayer _dataLayer;
 
@@ -72,13 +72,44 @@ namespace Elinkx.FileStorage.ServiceLayer
         }
 
         /// <summary>
-        /// Get File by File ID
+        /// Get File by File ID od DocumentID
         /// </summary>
         /// <param name="getFileRequest"></param>
         /// <returns></returns>
-        public GetFileResult GetFile(GetFileRequest getFileRequest)
-        {
-            return _dataLayer.GetFile(getFileRequest);
+        public GetFileResult GetFile(GetFileRequest getFileRequest){
+            if (getFileRequest.FileId != 0){
+                try{
+                    if (_dataLayer.FileIdExists(getFileRequest.FileId)){
+                        return _dataLayer.GetFile(getFileRequest);
+                    }
+                    else{
+                        return new GetFileResult(){
+                            ResultType = ResultTypes.NotReceived
+                        };
+                    }
+                }
+                catch (Exception){
+                    return new GetFileResult(){
+                        ResultType = ResultTypes.NotReceived
+                    };
+                }
+            }
+            else 
+                try {
+                    if (_dataLayer.DocumentIdExists(getFileRequest.DocumentID)){
+                        return _dataLayer.GetFileByDId(getFileRequest);
+                    }
+                    else{
+                        return new GetFileResult(){
+                            ResultType = ResultTypes.NotReceived
+                        };
+                    }
+                }
+                catch (Exception){
+                    return new GetFileResult(){
+                        ResultType = ResultTypes.NotReceived
+                    };
+                }
         }
     }
 }
