@@ -125,7 +125,6 @@ namespace Elinkx.FileStorage.DataLayer{
                 result.ResultType = ResultTypes.Received;
             }
             return result;
-
         }
 
         public bool FileIdExists(int fileId){
@@ -141,13 +140,12 @@ namespace Elinkx.FileStorage.DataLayer{
                 transaction.Rollback();
             }
         }
-        public bool DocumentIdExists(int fileId){
-            if (_context.Metadata.Find(fileId) != null){
+        public bool DocumentIdExists(int documentId){
+            if (_context.Metadata.Single(c => c.DocumentId == documentId) != null){
                 return true;
             }
             return false;
         }
-
         // Old Query functions
         //    //Set Reject by File ID (SoftDelete)
         //    public DeleteResult Delete(DeleteRequest setRejectRequest)
