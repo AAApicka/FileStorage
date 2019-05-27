@@ -3,19 +3,22 @@ using Elinkx.FileStorage.Contracts;
 using Elinkx.FileStorage.DataLayer.Entities;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace Elinkx.FileStorage.DataLayer{
-    public class DataLayer: IDataLayer{
+namespace Elinkx.FileStorage.DataLayer
+{
+    public class DataLayer : IDataLayer
+    {
         DataContext _context;
         IDbContextTransaction transaction;
         Metadata metadata;
         FileVersion fileVersion;
         FileContent fileContent;
+
         public DataLayer(DataContext context)
         {
             _context = context;
         }
+
         public InsertResult Insert(InsertRequest insertRequest)
         {
             metadata = new Metadata();
@@ -104,32 +107,13 @@ namespace Elinkx.FileStorage.DataLayer{
         }
         public GetFileResult GetFile(GetFileRequest getFileRequest)
         {
-            metadata = _context.Metadata.Find(getFileRequest.FileId);
-            GetFileResult result = new GetFileResult();
-            var content = _context.FileContent.Single(v => v.FileVersion.RowId == (from c in _context.FileVersion
-                                                                                   where c.FileId == getFileRequest.FileId
-                                                                                   select c).Max(c => c.RowId));
-            result.Content = content.Content;
-            result.ResultType = ResultTypes.Received;
-            return result;
+            throw new NotImplementedException();
         }
-        public GetFileResult GetFileByDId(GetFileRequest getFileRequest)
+
+        public bool FileIdExists(int fileId)
         {
-            metadata = _context.Metadata.Find(getFileRequest.FileId);
-            GetFileResult result = new GetFileResult();    
+            if (_context.Metadata.Find(fileId) != null)
             {
-                var content = _context.FileContent.Single(v => v.FileVersion.FileId == (from c in _context.Metadata
-                                                                                        where c.DocumentId == getFileRequest.DocumentID
-                                                                                        select c).Max(c=>c.FileId));
-                result.Content = content.Content;
-                result.ResultType = ResultTypes.Received;
-            }
-            return result;
-
-        }
-
-        public bool FileIdExists(int fileId){
-            if (_context.Metadata.Find(fileId) != null){
                 return true;
             }
             return false;
@@ -141,12 +125,7 @@ namespace Elinkx.FileStorage.DataLayer{
                 transaction.Rollback();
             }
         }
-        public bool DocumentIdExists(int fileId){
-            if (_context.Metadata.Find(fileId) != null){
-                return true;
-            }
-            return false;
-        }
+
 
         // Old Query functions
         //    //Set Reject by File ID (SoftDelete)
