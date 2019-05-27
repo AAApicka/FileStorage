@@ -118,7 +118,7 @@ namespace Elinkx.FileStorage.DataLayer{
             metadata = _context.Metadata.Find(getFileRequest.FileId);
             GetFileResult result = new GetFileResult();
             var content = _context.FileContent.Single(v => v.FileVersion.FileId == (from c in _context.Metadata
-                                                                                    where c.DocumentId == getFileRequest.DocumentID
+                                                                                    where c.DocumentId == getFileRequest.DocumentId
                                                                                     select c).Max(c => c.FileId));
             result.Content = content.Content;
             result.ResultType = ResultTypes.Received;
