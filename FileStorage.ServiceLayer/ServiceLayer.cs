@@ -96,7 +96,7 @@ namespace Elinkx.FileStorage.ServiceLayer
             }
             else 
                 try {
-                    if (_dataLayer.DocumentIdExists(getFileRequest.DocumentID)){
+                    if (_dataLayer.DocumentIdExists(getFileRequest.DocumentId)){
                         return _dataLayer.GetFileByDId(getFileRequest);
                     }
                     else{

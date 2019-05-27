@@ -116,19 +116,23 @@ namespace Elinkx.FileStorage.DataLayer{
         public GetFileResult GetFileByDId(GetFileRequest getFileRequest)
         {
             metadata = _context.Metadata.Find(getFileRequest.FileId);
-            GetFileResult result = new GetFileResult();    
-            {
-                var content = _context.FileContent.Single(v => v.FileVersion.FileId == (from c in _context.Metadata
-                                                                                        where c.DocumentId == getFileRequest.DocumentID
-                                                                                        select c).Max(c=>c.FileId));
-                result.Content = content.Content;
-                result.ResultType = ResultTypes.Received;
-            }
+            GetFileResult result = new GetFileResult();
+            var content = _context.FileContent.Single(v => v.FileVersion.FileId == (from c in _context.Metadata
+                                                                                    where c.DocumentId == getFileRequest.DocumentID
+                                                                                    select c).Max(c => c.FileId));
+            result.Content = content.Content;
+            result.ResultType = ResultTypes.Received;
             return result;
         }
 
         public bool FileIdExists(int fileId){
             if (_context.Metadata.Find(fileId) != null){
+                return true;
+            }
+            return false;
+        }
+        public bool DocumentIdExists(int documentId){
+            if (_context.Metadata.Single(c => c.DocumentId == documentId) != null){
                 return true;
             }
             return false;
@@ -140,12 +144,8 @@ namespace Elinkx.FileStorage.DataLayer{
                 transaction.Rollback();
             }
         }
-        public bool DocumentIdExists(int documentId){
-            if (_context.Metadata.Single(c => c.DocumentId == documentId) != null){
-                return true;
-            }
-            return false;
-        }
+
+
         // Old Query functions
         //    //Set Reject by File ID (SoftDelete)
         //    public DeleteResult Delete(DeleteRequest setRejectRequest)

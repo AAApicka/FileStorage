@@ -6,6 +6,6 @@ namespace Elinkx.FileStorage.Contracts
     public class GetFileRequest
     {
         public int FileId { get; set; }
-        public int DocumentID { get; set; }
+        public int DocumentId { get; set; }
     }
 }
