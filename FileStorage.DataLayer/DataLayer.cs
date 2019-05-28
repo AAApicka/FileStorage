@@ -113,9 +113,13 @@ namespace Elinkx.FileStorage.DataLayer
         }
         public IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
             //1. DocumentId, TypeId (+ nepovinny SubtypeId) vraci kolekci metadat + kolekci verzi ienumerable v kazdem
             //+ pridat lastRowId kde bude posledno verze.
+            var metadataCollection = _context.Metadata.Where(c => c.DocumentId == getMetadataRequest.DocumentId && c.TypeId == getMetadataRequest.TypeId);
+
+
+
             //2. SubjectId(ZakaznickeCislo), IEnumerable + kolekci verzi IEnumerable
         }
         public GetFileResult GetFile(GetFileRequest getFileRequest)

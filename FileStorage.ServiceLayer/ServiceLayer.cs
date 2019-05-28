@@ -78,12 +78,11 @@ namespace Elinkx.FileStorage.ServiceLayer
         }
 
         /// <summary>
-        /// Get File by File ID od DocumentID
+        /// Get File Content by rowId
         /// </summary>
         /// <param name="getFileRequest"></param>
         /// <returns></returns>
         public GetFileResult GetFile(GetFileRequest getFileRequest){
-            
                 try {
                     if (_dataLayer.RowIdExists(getFileRequest.RowId)){
                         return _dataLayer.GetFile(getFileRequest);
