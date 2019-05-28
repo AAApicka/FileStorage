@@ -117,10 +117,16 @@ namespace Elinkx.FileStorage.DataLayer
             //1. DocumentId, TypeId (+ nepovinny SubtypeId) vraci kolekci metadat + kolekci verzi ienumerable v kazdem
             //+ pridat lastRowId kde bude posledno verze.
             var metadataCollection = _context.Metadata.Where(c => c.DocumentId == getMetadataRequest.DocumentId && c.TypeId == getMetadataRequest.TypeId);
+            var fileVersionsRowIds = (from c in metadataCollection
+                               select c).Single().FileVersion;
+            var maxVersionRowId = (from c in fileVersionsRowIds
+                                   select c).Max();
 
 
+                                   //2. SubjectId(ZakaznickeCislo), IEnumerable + kolekci verzi IEnumerable
+                                   //najdi metadata ktere maji dane subjektId
+                                   //do kazde polozku resultu preklop kolekci verzi k dane polozce a take nejvyssi verzi
 
-            //2. SubjectId(ZakaznickeCislo), IEnumerable + kolekci verzi IEnumerable
         }
         public GetFileResult GetFile(GetFileRequest getFileRequest)
         {
