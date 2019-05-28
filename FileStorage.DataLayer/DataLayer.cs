@@ -5,10 +5,11 @@ using Microsoft.EntityFrameworkCore.Storage;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Elinkx.FileStorage.DataLayer{
-    public class DataLayer: IDataLayer{
+namespace Elinkx.FileStorage.DataLayer
+{
+    public class DataLayer : IDataLayer, IDisposable
+    {
         DataContext _context;
-        IDbContextTransaction transaction;
         Metadata metadata;
         FileVersion fileVersion;
         FileContent fileContent;
@@ -19,8 +20,6 @@ namespace Elinkx.FileStorage.DataLayer{
         public InsertResult Insert(InsertRequest insertRequest)
         {
             metadata = new Metadata();
-            InsertResult result = new InsertResult();
-            transaction = _context.Database.BeginTransaction();
             metadata.ContentType = insertRequest.ContentType;
             metadata.SubjectId = insertRequest.SubjectId;
             metadata.Name = insertRequest.Name;
@@ -39,29 +38,26 @@ namespace Elinkx.FileStorage.DataLayer{
             fileContent.Content = insertRequest.Content;
             _context.Add(fileContent);
             fileVersion = new FileVersion();
-            fileVersion.FileId = metadata.FileId;
-            fileVersion.RowId = fileContent.RowId;
+            fileVersion.Metadata = metadata;
+            fileVersion.FileContent = fileContent;
             fileVersion.Changed = metadata.Changed;
             fileVersion.ChangedBy = metadata.ChangedBy;
             fileVersion.Size = fileContent.Content.Length;
             _context.Add(fileVersion);
             _context.SaveChanges();
-            result.FileId = metadata.FileId;
-            result.Changed = metadata.Changed;
-            result.ChangedBy = metadata.ChangedBy;
-            result.ResultType = ResultTypes.Inserted;
-            transaction.Commit();
-            transaction.Dispose();
-            _context.Dispose();
-            return result;
+            return new InsertResult()
+            {
+                FileId = metadata.FileId,
+                Changed = metadata.Changed,
+                ChangedBy = metadata.ChangedBy,
+                ResultType = ResultTypes.Inserted,
+            };
         }
         public UpdateResult Update(UpdateRequest updateRequest)
         {
             //update only received fields from contract
             // only updates if request is non zero non null or non empty
             metadata = _context.Metadata.Find(updateRequest.FileId);
-            UpdateResult result = new UpdateResult();
-            transaction = _context.Database.BeginTransaction();
             metadata.ContentType = updateRequest.ContentType.Length > 0 ? updateRequest.ContentType : metadata.ContentType;
             metadata.SubjectId = updateRequest.SubjectId != 0 ? updateRequest.SubjectId : metadata.SubjectId;
             metadata.Name = updateRequest.Name.Length > 0 ? updateRequest.Name : metadata.Name;
@@ -74,14 +70,13 @@ namespace Elinkx.FileStorage.DataLayer{
             metadata.Changed = DateTime.Now;
             metadata.ChangedBy = updateRequest.UserCode;
             _context.SaveChanges();
-            result.FileId = metadata.FileId;
-            result.Changed = metadata.Changed;
-            result.ChangedBy = metadata.ChangedBy;
-            result.ResultType = ResultTypes.Updated;
-            transaction.Commit();
-            transaction.Dispose();
-            _context.Dispose();
-            return result;
+            return new UpdateResult()
+            {
+                FileId = metadata.FileId,
+                Changed = metadata.Changed,
+                ChangedBy = metadata.ChangedBy,
+                ResultType = ResultTypes.Updated
+            };
         }
         public DeleteResult Delete(DeleteRequest deleteRequest)
         {
@@ -101,48 +96,50 @@ namespace Elinkx.FileStorage.DataLayer{
         public IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest)
         {
             throw new NotImplementedException();
+            //1. DocumentId, TypeId (+ nepovinny SubtypeId) vraci kolekci metadat + kolekci verzi ienumerable v kazdem
+            //+ pridat lastRowId kde bude posledno verze.
+            //2. SubjectId(ZakaznickeCislo), IEnumerable + kolekci verzi IEnumerable
         }
         public GetFileResult GetFile(GetFileRequest getFileRequest)
         {
-            metadata = _context.Metadata.Find(getFileRequest.FileId);
+            //1. dle RowId vraci danou verzi
             GetFileResult result = new GetFileResult();
-            var content = _context.FileContent.Single(v => v.FileVersion.RowId == (from c in _context.FileVersion
-                                                                                   where c.FileId == getFileRequest.FileId
-                                                                                   select c).Max(c => c.RowId));
+            var content = _context.FileContent.Single(v => v.FileVersion.FileContent.RowId == (from c in _context.FileVersion
+                                                                                   where c.Metadata.FileId == getFileRequest.FileId
+                                                                                   select c).Max(c => c.FileContent.RowId));
             result.Content = content.Content;
-            result.ResultType = ResultTypes.Received;
+            result.ResultType = ResultTypes.DataOk;
             return result;
         }
         public GetFileResult GetFileByDId(GetFileRequest getFileRequest)
         {
-            metadata = _context.Metadata.Find(getFileRequest.FileId);
             GetFileResult result = new GetFileResult();
-            var content = _context.FileContent.Single(v => v.FileVersion.FileId == (from c in _context.Metadata
-                                                                                    where c.DocumentId == getFileRequest.DocumentId
-                                                                                    select c).Max(c => c.FileId));
+            var content = _context.FileContent.Where(v => v.FileVersion.Metadata.DocumentId == getFileRequest.DocumentId )
+                .OrderBy(a=>a.RowId).Last();
+
             result.Content = content.Content;
             result.ResultType = ResultTypes.Received;
             return result;
         }
-
-        public bool FileIdExists(int fileId){
-            if (_context.Metadata.Find(fileId) != null){
-                return true;
-            }
-            return false;
-        }
-        public bool DocumentIdExists(int documentId){
-            if (_context.Metadata.Single(c => c.DocumentId == documentId) != null){
-                return true;
-            }
-            return false;
-        }
-        public void RollBack()
+        public bool FileIdExists(int fileId)
         {
-            if (transaction != null)
+            if (_context.Metadata.Find(fileId) != null)
             {
-                transaction.Rollback();
+                return true;
             }
+            return false;
+        }
+        public bool DocumentIdExists(int documentId)
+        {
+            if (_context.Metadata.Single(c => c.DocumentId == documentId) != null)
+            {
+                return true;
+            }
+            return false;
+        }
+        public void Dispose()
+        {
+            _context.Dispose();
         }
 
 

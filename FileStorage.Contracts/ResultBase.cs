@@ -7,9 +7,10 @@ namespace Elinkx.FileStorage.Contracts
     public abstract class ResultBase
     {
         public ResultTypes ResultType { get ; set; }
+        public string Message { get; set; }
     }
     public enum ResultTypes
     {
-        Inserted, Updated, Received, Deleted, NotInserted, NotUpdated, NotReceived, NotDeleted, Warning
+        Inserted, Updated, DataMissing, Deleted, NotInserted, NotUpdated, DataOk, NotDeleted, Warning, Received, NotReceived
     }
 }

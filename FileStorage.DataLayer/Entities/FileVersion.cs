@@ -9,12 +9,15 @@ namespace Elinkx.FileStorage.DataLayer.Entities
     {
         [Key]
         public int VersionId { get; set; }
+        [Required]
         public DateTime Changed { get; set; }
+        [MaxLength(20), Required]
         public string ChangedBy { get; set; }
+        [Required]
         public int Size { get; set; }
-        public int FileId { get; set; }
-        public int RowId { get; set; }
+        [ForeignKey("FileId")]
         public Metadata Metadata { get; set; }
+        [ForeignKey("RowId")]
         public FileContent FileContent { get; set; }
 
 

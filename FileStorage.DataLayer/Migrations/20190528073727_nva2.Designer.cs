@@ -4,14 +4,16 @@ using Elinkx.FileStorage.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Elinkx.FileStorage.DataLayer.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20190528073727_nva2")]
+    partial class nva2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,7 +47,7 @@ namespace Elinkx.FileStorage.DataLayer.Migrations
 
                     b.Property<int?>("FileId");
 
-                    b.Property<int?>("RowId");
+                    b.Property<int>("RowId");
 
                     b.Property<int>("Size");
 
@@ -54,8 +56,7 @@ namespace Elinkx.FileStorage.DataLayer.Migrations
                     b.HasIndex("FileId");
 
                     b.HasIndex("RowId")
-                        .IsUnique()
-                        .HasFilter("[RowId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("FileVersion");
                 });
@@ -68,23 +69,19 @@ namespace Elinkx.FileStorage.DataLayer.Migrations
 
                     b.Property<DateTime>("Changed");
 
-                    b.Property<string>("ChangedBy")
-                        .HasMaxLength(20);
+                    b.Property<string>("ChangedBy");
 
-                    b.Property<string>("ContentType")
-                        .HasMaxLength(150);
+                    b.Property<string>("ContentType");
 
                     b.Property<DateTime>("Created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(20);
+                    b.Property<string>("CreatedBy");
 
                     b.Property<string>("Description");
 
                     b.Property<int>("DocumentId");
 
-                    b.Property<string>("Name")
-                        .HasMaxLength(255);
+                    b.Property<string>("Name");
 
                     b.Property<bool>("Reject");
 
@@ -92,11 +89,9 @@ namespace Elinkx.FileStorage.DataLayer.Migrations
 
                     b.Property<int>("SubjectId");
 
-                    b.Property<string>("SubtypeId")
-                        .HasMaxLength(20);
+                    b.Property<string>("SubtypeId");
 
-                    b.Property<string>("TypeId")
-                        .HasMaxLength(20);
+                    b.Property<string>("TypeId");
 
                     b.HasKey("FileId");
 
@@ -111,7 +106,8 @@ namespace Elinkx.FileStorage.DataLayer.Migrations
 
                     b.HasOne("Elinkx.FileStorage.DataLayer.Entities.FileContent", "FileContent")
                         .WithOne("FileVersion")
-                        .HasForeignKey("Elinkx.FileStorage.DataLayer.Entities.FileVersion", "RowId");
+                        .HasForeignKey("Elinkx.FileStorage.DataLayer.Entities.FileVersion", "RowId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

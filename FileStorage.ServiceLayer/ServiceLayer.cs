@@ -9,7 +9,6 @@ namespace Elinkx.FileStorage.ServiceLayer
     {
         private readonly IDataLayer _dataLayer;
 
-        //1. Metodu SetReject prejmenovat na Delete a funkce pouze nastaveni na true at programator webklienta vi co to dela
         public ServiceLayer(IDataLayer datalayer)
         {
             _dataLayer = datalayer;
@@ -21,12 +20,13 @@ namespace Elinkx.FileStorage.ServiceLayer
             {
                 return _dataLayer.Insert(insertRequest);
             }
-            catch (Exception)
+            catch (Exception e) //melo by se logovat zvlast, nyni OK.
             {
                 _dataLayer.RollBack();
                 return new InsertResult()
                 {
-                    ResultType = ResultTypes.NotInserted
+                    ResultType = ResultTypes.NotInserted,
+                    Message = e.Message
                 };
 
             }
@@ -45,16 +45,18 @@ namespace Elinkx.FileStorage.ServiceLayer
                 {
                     return new UpdateResult()
                     {
-                        ResultType = ResultTypes.NotUpdated
+                        ResultType = ResultTypes.NotUpdated,
+                        Message = "FileId does not exist!"
                     };
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 _dataLayer.RollBack();
                 return new UpdateResult()
                 {
-                    ResultType = ResultTypes.NotUpdated
+                    ResultType = ResultTypes.NotUpdated,
+                    Message = e.Message
                 };
 
             }

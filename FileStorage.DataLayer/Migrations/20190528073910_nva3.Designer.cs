@@ -4,14 +4,16 @@ using Elinkx.FileStorage.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Elinkx.FileStorage.DataLayer.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20190528073910_nva3")]
+    partial class nva3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,23 +70,19 @@ namespace Elinkx.FileStorage.DataLayer.Migrations
 
                     b.Property<DateTime>("Changed");
 
-                    b.Property<string>("ChangedBy")
-                        .HasMaxLength(20);
+                    b.Property<string>("ChangedBy");
 
-                    b.Property<string>("ContentType")
-                        .HasMaxLength(150);
+                    b.Property<string>("ContentType");
 
                     b.Property<DateTime>("Created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(20);
+                    b.Property<string>("CreatedBy");
 
                     b.Property<string>("Description");
 
                     b.Property<int>("DocumentId");
 
-                    b.Property<string>("Name")
-                        .HasMaxLength(255);
+                    b.Property<string>("Name");
 
                     b.Property<bool>("Reject");
 
@@ -92,11 +90,9 @@ namespace Elinkx.FileStorage.DataLayer.Migrations
 
                     b.Property<int>("SubjectId");
 
-                    b.Property<string>("SubtypeId")
-                        .HasMaxLength(20);
+                    b.Property<string>("SubtypeId");
 
-                    b.Property<string>("TypeId")
-                        .HasMaxLength(20);
+                    b.Property<string>("TypeId");
 
                     b.HasKey("FileId");
 

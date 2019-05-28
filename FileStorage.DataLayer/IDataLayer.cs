@@ -13,6 +13,5 @@ namespace Elinkx.FileStorage.DataLayer
         GetFileResult GetFileByDId(GetFileRequest getFileRequest);
         bool FileIdExists(int fileId);
         bool DocumentIdExists(int documentId);
-        void RollBack();
     }
 }
