@@ -4,10 +4,14 @@ using System.ComponentModel.DataAnnotations;
 namespace Elinkx.FileStorage.Contracts
 {
     public class GetMetadataRequest
-    {
-        public int FileId { get; set; }
-        public DateTime CreatedFrom { get; set; }
-        public DateTime CreatedTo { get; set; }
+    {   
+        //search parameters set 1
+        public int DocumentId { get; set; }
         public string TypeId { get; set; }
+        //optional
+        public string SubtypeId { get; set; }
+
+        //search parameters set 2
+        public string SubjectId { get; set; }
     }
 }

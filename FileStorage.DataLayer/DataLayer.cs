@@ -102,16 +102,14 @@ namespace Elinkx.FileStorage.DataLayer
         {
             metadata = _context.Metadata.Find(deleteRequest.FileId);
             DeleteResult result = new DeleteResult();
-            IDbContextTransaction transaction = _context.Database.BeginTransaction();
             metadata.Reject = true;
             _context.Add(metadata);
             _context.SaveChanges();
-            result.FileId = metadata.FileId;
-            result.ResultType = ResultTypes.Deleted;
-            transaction.Commit();
-            transaction.Dispose();
-            _context.Dispose();
-            return result;
+            return new DeleteResult()
+            {
+                FileId = metadata.FileId,
+                ResultType = ResultTypes.Deleted
+            };
         }
         public IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest)
         {
@@ -130,7 +128,7 @@ namespace Elinkx.FileStorage.DataLayer
             result.ResultType = ResultTypes.DataOk;
             return result;
         }
-
+        //helper methods
         public bool FileIdExists(int fileId)
         {
             if (_context.Metadata.Find(fileId) != null)

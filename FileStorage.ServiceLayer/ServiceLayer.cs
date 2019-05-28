@@ -90,13 +90,14 @@ namespace Elinkx.FileStorage.ServiceLayer
                     }
                     else{
                         return new GetFileResult(){
-                            ResultType = ResultTypes.NotReceived
+                            ResultType = ResultTypes.DataMissing
                         };
                     }
                 }
-                catch (Exception){
-                    return new GetFileResult(){
-                        ResultType = ResultTypes.NotReceived
+                catch (Exception e){
+                return new GetFileResult() {
+                    ResultType = ResultTypes.NotReceived,
+                    Message = e.Message    
                     };
                 }
         }
