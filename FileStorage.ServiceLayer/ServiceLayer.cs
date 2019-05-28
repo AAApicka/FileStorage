@@ -18,6 +18,10 @@ namespace Elinkx.FileStorage.ServiceLayer
         {
             try
             {
+                if (_dataLayer.FileIdExists(insertRequest.FileId))
+                {
+                    return _dataLayer.InsertVersion(insertRequest);
+                }
                 return _dataLayer.Insert(insertRequest);
             }
             catch (Exception e) //melo by se logovat zvlast, nyni OK.

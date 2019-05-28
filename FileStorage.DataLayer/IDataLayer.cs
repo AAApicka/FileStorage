@@ -6,6 +6,7 @@ namespace Elinkx.FileStorage.DataLayer
     public interface IDataLayer
     {
         InsertResult Insert(InsertRequest insertRequest);
+        InsertResult InsertVersion(InsertRequest insertRequest);
         UpdateResult Update(UpdateRequest updateRequest);
         DeleteResult Delete(DeleteRequest deleteRequest);
         IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest);

@@ -53,20 +53,41 @@ namespace Elinkx.FileStorage.DataLayer
                 ResultType = ResultTypes.Inserted,
             };
         }
+        public InsertResult InsertVersion(InsertRequest insertRequest)
+        {
+            metadata = _context.Metadata.Find(insertRequest.FileId);
+            metadata.Changed = DateTime.Now;
+            metadata.ChangedBy = insertRequest.UserCode;
+            _context.Add(metadata);
+            fileContent = new FileContent();
+            fileContent.Content = insertRequest.Content;
+            _context.Add(fileContent);
+            fileVersion = new FileVersion();
+            fileVersion.Metadata = metadata;
+            fileVersion.FileContent = fileContent;
+            fileVersion.Changed = metadata.Changed;
+            fileVersion.ChangedBy = metadata.ChangedBy;
+            fileVersion.Size = fileContent.Content.Length;
+            _context.Add(fileVersion);
+            _context.SaveChanges();
+            return new InsertResult()
+            {
+                FileId = metadata.FileId,
+                Changed = metadata.Changed,
+                ChangedBy = metadata.ChangedBy,
+                ResultType = ResultTypes.Inserted,
+            };
+        }
         public UpdateResult Update(UpdateRequest updateRequest)
         {
-            //update only received fields from contract
-            // only updates if request is non zero non null or non empty
             metadata = _context.Metadata.Find(updateRequest.FileId);
-            metadata.ContentType = updateRequest.ContentType.Length > 0 ? updateRequest.ContentType : metadata.ContentType;
-            metadata.SubjectId = updateRequest.SubjectId != 0 ? updateRequest.SubjectId : metadata.SubjectId;
-            metadata.Name = updateRequest.Name.Length > 0 ? updateRequest.Name : metadata.Name;
-            metadata.Description = updateRequest.Description;
-            metadata.DocumentId = updateRequest.DocumentId;
-            metadata.TypeId = updateRequest.TypeId;
-            metadata.SubtypeId = updateRequest.SubtypeId;
-            metadata.Signed = updateRequest.Signed;
-            metadata.Reject = false;
+            metadata.ContentType = !string.IsNullOrEmpty(updateRequest.ContentType) ? updateRequest.ContentType : metadata.ContentType;
+            metadata.SubjectId = !(updateRequest.SubjectId != 0) ? updateRequest.SubjectId : metadata.SubjectId;
+            metadata.Name = !string.IsNullOrEmpty(updateRequest.Name) ? updateRequest.Name : metadata.Name;
+            metadata.Description = !string.IsNullOrEmpty(updateRequest.Description) ? updateRequest.Description : metadata.Description;
+            metadata.DocumentId = !(updateRequest.DocumentId != 0) ? updateRequest.DocumentId : metadata.DocumentId;
+            metadata.TypeId = !string.IsNullOrEmpty(updateRequest.TypeId) ? updateRequest.TypeId : metadata.TypeId;
+            metadata.SubtypeId = !string.IsNullOrEmpty(updateRequest.SubtypeId) ? updateRequest.SubtypeId : metadata.SubtypeId; 
             metadata.Changed = DateTime.Now;
             metadata.ChangedBy = updateRequest.UserCode;
             _context.SaveChanges();
@@ -102,7 +123,7 @@ namespace Elinkx.FileStorage.DataLayer
         }
         public GetFileResult GetFile(GetFileRequest getFileRequest)
         {
-            //1. dle RowId vraci danou verzi
+            //1. dle RowId vraci danou verzi - Hotovo
             GetFileResult result = new GetFileResult();
             var content = _context.FileContent.Single(v => v.FileVersion.FileContent.RowId == getFileRequest.RowId);
 
