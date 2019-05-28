@@ -104,23 +104,13 @@ namespace Elinkx.FileStorage.DataLayer
         {
             //1. dle RowId vraci danou verzi
             GetFileResult result = new GetFileResult();
-            var content = _context.FileContent.Single(v => v.FileVersion.FileContent.RowId == (from c in _context.FileVersion
-                                                                                   where c.Metadata.FileId == getFileRequest.FileId
-                                                                                   select c).Max(c => c.FileContent.RowId));
+            var content = _context.FileContent.Single(v => v.FileVersion.FileContent.RowId == getFileRequest.RowId);
+
             result.Content = content.Content;
             result.ResultType = ResultTypes.DataOk;
             return result;
         }
-        public GetFileResult GetFileByDId(GetFileRequest getFileRequest)
-        {
-            GetFileResult result = new GetFileResult();
-            var content = _context.FileContent.Where(v => v.FileVersion.Metadata.DocumentId == getFileRequest.DocumentId )
-                .OrderBy(a=>a.RowId).Last();
 
-            result.Content = content.Content;
-            result.ResultType = ResultTypes.Received;
-            return result;
-        }
         public bool FileIdExists(int fileId)
         {
             if (_context.Metadata.Find(fileId) != null)
@@ -129,9 +119,9 @@ namespace Elinkx.FileStorage.DataLayer
             }
             return false;
         }
-        public bool DocumentIdExists(int documentId)
+        public bool RowIdExists(int rowId)
         {
-            if (_context.Metadata.Single(c => c.DocumentId == documentId) != null)
+            if (_context.FileContent.Single(c => c.RowId == rowId) != null)
             {
                 return true;
             }

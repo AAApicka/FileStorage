@@ -22,7 +22,7 @@ namespace Elinkx.FileStorage.ServiceLayer
             }
             catch (Exception e) //melo by se logovat zvlast, nyni OK.
             {
-                _dataLayer.RollBack();
+                
                 return new InsertResult()
                 {
                     ResultType = ResultTypes.NotInserted,
@@ -52,7 +52,7 @@ namespace Elinkx.FileStorage.ServiceLayer
             }
             catch (Exception e)
             {
-                _dataLayer.RollBack();
+               
                 return new UpdateResult()
                 {
                     ResultType = ResultTypes.NotUpdated,
@@ -79,27 +79,10 @@ namespace Elinkx.FileStorage.ServiceLayer
         /// <param name="getFileRequest"></param>
         /// <returns></returns>
         public GetFileResult GetFile(GetFileRequest getFileRequest){
-            if (getFileRequest.FileId != 0){
-                try{
-                    if (_dataLayer.FileIdExists(getFileRequest.FileId)){
-                        return _dataLayer.GetFile(getFileRequest);
-                    }
-                    else{
-                        return new GetFileResult(){
-                            ResultType = ResultTypes.NotReceived
-                        };
-                    }
-                }
-                catch (Exception){
-                    return new GetFileResult(){
-                        ResultType = ResultTypes.NotReceived
-                    };
-                }
-            }
-            else 
+            
                 try {
-                    if (_dataLayer.DocumentIdExists(getFileRequest.DocumentId)){
-                        return _dataLayer.GetFileByDId(getFileRequest);
+                    if (_dataLayer.RowIdExists(getFileRequest.RowId)){
+                        return _dataLayer.GetFile(getFileRequest);
                     }
                     else{
                         return new GetFileResult(){
