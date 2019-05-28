@@ -58,7 +58,6 @@ namespace Elinkx.FileStorage.DataLayer
             metadata = _context.Metadata.Find(insertRequest.FileId);
             metadata.Changed = DateTime.Now;
             metadata.ChangedBy = insertRequest.UserCode;
-            _context.Add(metadata);
             fileContent = new FileContent();
             fileContent.Content = insertRequest.Content;
             _context.Add(fileContent);
