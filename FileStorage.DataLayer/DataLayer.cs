@@ -324,20 +324,23 @@ namespace Elinkx.FileStorage.DataLayer
                     SubjectId = item.SubjectId,
                     SubtypeId = item.SubtypeId,
                     TypeId = item.TypeId,
-                    AllVersionsRowIds = GetRowIdsFromFileVersion(item.FileVersion),
+                    AllVersionsRowIds = GetRowIdsFromMetadata(item),
                     LastVersionRowId = 999
                 });
             }
             return result;
             
         }
-        private List<int> GetRowIdsFromFileVersion(List<FileVersion> versions)
+        private List<int> GetRowIdsFromMetadata(Metadata md)
         {
             List<int> RowIds = new List<int>();
-            foreach (var item in versions)
+            // Rowids ktere jsou ve VersionIds podle Dane 
+            var q = _context.FileContent.Where(c => c.FileVersion.Metadata.FileId == md.FileId).ToList();
+            foreach (var item in q)
             {
-                RowIds.Add(item.FileContent.RowId);
+                RowIds.Add(item.RowId);
             }
+
             return RowIds;
         }
         //    private List<Metadata> QueryByDate(GetMetadataRequest getMetadataByDateRequest, DataContext _context)
