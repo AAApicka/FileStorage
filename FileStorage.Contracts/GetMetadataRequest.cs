@@ -12,6 +12,6 @@ namespace Elinkx.FileStorage.Contracts
         public string SubtypeId { get; set; }
 
         //search parameters set 2
-        public string SubjectId { get; set; }
+        public int SubjectId { get; set; }
     }
 }

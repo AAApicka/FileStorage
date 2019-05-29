@@ -119,15 +119,19 @@ namespace Elinkx.FileStorage.DataLayer
             //2. SubjectId(ZakaznickeCislo), IEnumerable + kolekci verzi IEnumerable
             //najdi metadata ktere maji dane subjektId
             //do kazde polozku resultu preklop kolekci verzi k dane polozce a take nejvyssi verzi
-            List<GetMetadataResult> result = new List<GetMetadataResult>();
+
             if (string.IsNullOrEmpty(getMetadataRequest.SubtypeId))
             {
                 List<Metadata> metadata = QueryByDocAndTypeId(getMetadataRequest);
                 return MapToResultList(metadata);
             }
+            else if (getMetadataRequest.SubjectId != 0) {
+                List<Metadata> metadata = QueryBySubjectId(getMetadataRequest);
+                return MapToResultList(metadata);
+            }
             else
             {
-                List<Metadata> metadata = QueryByDocAndTypeId(getMetadataRequest);
+                List<Metadata> metadata = QueryByDocTypeAndSubtypeId(getMetadataRequest);
                 return MapToResultList(metadata);
             }
 
@@ -304,8 +308,22 @@ namespace Elinkx.FileStorage.DataLayer
                 (dbEntry.DocumentId == getMetadataRequest.DocumentId) &&
                 (dbEntry.TypeId == getMetadataRequest.TypeId)).ToList();
         }
+        private List<Metadata> QueryByDocTypeAndSubtypeId(GetMetadataRequest getMetadataRequest)
+        {
+            return _context.Metadata.Where(dbEntry =>
+                (dbEntry.DocumentId == getMetadataRequest.DocumentId) &&
+                (dbEntry.TypeId == getMetadataRequest.TypeId) &&
+                (dbEntry.SubtypeId == getMetadataRequest.SubtypeId)).ToList();
+        }
+        private List<Metadata> QueryBySubjectId(GetMetadataRequest getMetadataRequest)
+        {
+            return _context.Metadata.Where(dbEntry =>
+                (dbEntry.SubjectId == getMetadataRequest.SubjectId)).ToList();
+        }
+
         private IEnumerable<GetMetadataResult> MapToResultList(List<Metadata> metadata)
         {
+            int maxRowid = 0;
             List<GetMetadataResult> result = new List<GetMetadataResult>();
             foreach (var item in metadata)
             {
@@ -324,14 +342,14 @@ namespace Elinkx.FileStorage.DataLayer
                     SubjectId = item.SubjectId,
                     SubtypeId = item.SubtypeId,
                     TypeId = item.TypeId,
-                    AllVersionsRowIds = GetRowIdsFromMetadata(item),
-                    LastVersionRowId = 999
+                    AllVersionsRowIds = GetRowIdsFromMetadata(item, out maxRowid),
+                    LastVersionRowId = maxRowid
                 });
             }
             return result;
             
         }
-        private List<int> GetRowIdsFromMetadata(Metadata md)
+        private List<int> GetRowIdsFromMetadata(Metadata md, out int maxRowid)
         {
             List<int> RowIds = new List<int>();
             // Rowids ktere jsou ve VersionIds podle Dane 
@@ -340,15 +358,9 @@ namespace Elinkx.FileStorage.DataLayer
             {
                 RowIds.Add(item.RowId);
             }
-
+            maxRowid = RowIds.Max();
             return RowIds;
         }
-        //    private List<Metadata> QueryByDate(GetMetadataRequest getMetadataByDateRequest, DataContext _context)
-        //    {
-        //        return _context.Metadata.Where(dbEntry =>
-        //                                   (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
-        //                                   (dbEntry.Created <= getMetadataByDateRequest.CreatedTo)).ToList();
-        //    }
     }
 }
 
