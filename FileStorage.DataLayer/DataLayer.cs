@@ -120,7 +120,7 @@ namespace Elinkx.FileStorage.DataLayer
             //najdi metadata ktere maji dane subjektId
             //do kazde polozku resultu preklop kolekci verzi k dane polozce a take nejvyssi verzi
 
-            if (string.IsNullOrEmpty(getMetadataRequest.SubtypeId))
+            if (string.IsNullOrEmpty(getMetadataRequest.SubtypeId)&&(getMetadataRequest.SubjectId==0))
             {
                 List<Metadata> metadata = QueryByDocAndTypeId(getMetadataRequest);
                 return MapToResultList(metadata);
