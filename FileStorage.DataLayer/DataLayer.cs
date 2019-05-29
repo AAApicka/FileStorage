@@ -116,16 +116,20 @@ namespace Elinkx.FileStorage.DataLayer
             //throw new NotImplementedException();
             //1. DocumentId, TypeId (+ nepovinny SubtypeId) vraci kolekci metadat + kolekci verzi ienumerable v kazdem
             //+ pridat lastRowId kde bude posledno verze.
-            var metadataCollection = _context.Metadata.Where(c => c.DocumentId == getMetadataRequest.DocumentId && c.TypeId == getMetadataRequest.TypeId);
-            var fileVersionsRowIds = (from c in metadataCollection
-                               select c).Single().FileVersion;
-            var maxVersionRowId = (from c in fileVersionsRowIds
-                                   select c).Max();
-
-
-                                   //2. SubjectId(ZakaznickeCislo), IEnumerable + kolekci verzi IEnumerable
-                                   //najdi metadata ktere maji dane subjektId
-                                   //do kazde polozku resultu preklop kolekci verzi k dane polozce a take nejvyssi verzi
+            //2. SubjectId(ZakaznickeCislo), IEnumerable + kolekci verzi IEnumerable
+            //najdi metadata ktere maji dane subjektId
+            //do kazde polozku resultu preklop kolekci verzi k dane polozce a take nejvyssi verzi
+            List<GetMetadataResult> result = new List<GetMetadataResult>();
+            if (string.IsNullOrEmpty(getMetadataRequest.SubtypeId))
+            {
+                List<Metadata> metadata = QueryByDocAndTypeId(getMetadataRequest);
+                return MapToResultList(metadata);
+            }
+            else
+            {
+                List<Metadata> metadata = QueryByDocAndTypeId(getMetadataRequest);
+                return MapToResultList(metadata);
+            }
 
         }
         public GetFileResult GetFile(GetFileRequest getFileRequest)
@@ -199,23 +203,6 @@ namespace Elinkx.FileStorage.DataLayer
 
         //    }
 
-        //    //Get Metadata by Date and optional TypeId
-        //    public IEnumerable<GetMetadataResult> GetMetadataByDate(GetMetadataRequest getMetadataByDateRequest)
-        //    {
-        //        _context = new DataContext(connectionString);
-        //        List<GetMetadataResult> result = new List<GetMetadataResult>();
-        //        if (string.IsNullOrEmpty(getMetadataByDateRequest.TypeId))
-        //        {
-        //            List<Metadata> metadata = QueryByDate(getMetadataByDateRequest);
-        //            MapToResultList(result, metadata);
-        //        }
-        //        else
-        //        {
-        //            List<Metadata> metadata = QueryByDateAndTypeId(getMetadataByDateRequest, _context);
-        //            MapToResultList(result, metadata);
-        //        }
-        //        return result;
-        //    }
 
         //    //Get File Content by File Id or Document Id
         //    public GetFileResult GetFile(GetFileRequest getFileRequest)
@@ -311,34 +298,48 @@ namespace Elinkx.FileStorage.DataLayer
         //        metadata.Changed = DateTime.Now;
         //        metadata.ChangedBy = setRejectRequest.UserCode;
         //    }
-        //    private List<Metadata> QueryByDateAndTypeId(GetMetadataRequest getMetadataByDateRequest, DataContext _context)
-        //    {
-        //        return _context.Metadata.Where(dbEntry =>
-        //            (dbEntry.Created >= getMetadataByDateRequest.CreatedFrom) &&
-        //            (dbEntry.Created <= getMetadataByDateRequest.CreatedTo) && (dbEntry.TypeId == getMetadataByDateRequest.TypeId)).ToList();
-        //    }
-        //    private void MapToResultList(List<GetMetadataResult> result, List<Metadata> metadata)
-        //    {
-        //        foreach (var item in metadata)
-        //        {
-        //            result.Add(new GetMetadataResult()
-        //            {
-        //                Changed = item.Changed,
-        //                ChangedBy = item.ChangedBy,
-        //                ContentType = item.ContentType,
-        //                Created = item.Created,
-        //                CreatedBy = item.CreatedBy,
-        //                Description = item.Description,
-        //                DocumentId = item.DocumentId,
-        //                FileId = item.FileId,
-        //                Name = item.Name,
-        //                Signed = item.Signed,
-        //                SubjectId = item.SubjectId,
-        //                SubtypeId = item.SubtypeId,
-        //                TypeId = item.TypeId
-        //            });
-        //        }
-        //    }
+        private List<Metadata> QueryByDocAndTypeId(GetMetadataRequest getMetadataRequest)
+        {
+            return _context.Metadata.Where(dbEntry =>
+                (dbEntry.DocumentId == getMetadataRequest.DocumentId) &&
+                (dbEntry.TypeId == getMetadataRequest.TypeId)).ToList();
+        }
+        private IEnumerable<GetMetadataResult> MapToResultList(List<Metadata> metadata)
+        {
+            List<GetMetadataResult> result = new List<GetMetadataResult>();
+            foreach (var item in metadata)
+            {
+                result.Add(new GetMetadataResult()
+                {
+                    Changed = item.Changed,
+                    ChangedBy = item.ChangedBy,
+                    ContentType = item.ContentType,
+                    Created = item.Created,
+                    CreatedBy = item.CreatedBy,
+                    Description = item.Description,
+                    DocumentId = item.DocumentId,
+                    FileId = item.FileId,
+                    Name = item.Name,
+                    Signed = item.Signed,
+                    SubjectId = item.SubjectId,
+                    SubtypeId = item.SubtypeId,
+                    TypeId = item.TypeId,
+                    AllVersionsRowIds = GetRowIdsFromFileVersion(item.FileVersion),
+                    LastVersionRowId = 999
+                });
+            }
+            return result;
+            
+        }
+        private List<int> GetRowIdsFromFileVersion(List<FileVersion> versions)
+        {
+            List<int> RowIds = new List<int>();
+            foreach (var item in versions)
+            {
+                RowIds.Add(item.FileContent.RowId);
+            }
+            return RowIds;
+        }
         //    private List<Metadata> QueryByDate(GetMetadataRequest getMetadataByDateRequest, DataContext _context)
         //    {
         //        return _context.Metadata.Where(dbEntry =>
