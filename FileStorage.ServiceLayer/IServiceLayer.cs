@@ -10,5 +10,6 @@ namespace Elinkx.FileStorage.ServiceLayer
         IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest);
         InsertResult Insert(InsertRequest insertRequest);
         UpdateResult Update(UpdateRequest updateRequest);
+        InsertVersionResult InsertVersion(InsertVersionRequest insertVersionRequest);
     }
 }

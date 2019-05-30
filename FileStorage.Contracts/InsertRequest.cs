@@ -1,6 +1,7 @@
 ﻿
 namespace Elinkx.FileStorage.Contracts
 {
+    //jeste jeden insertVersion request.
     public class InsertRequest
     {
         public int FileId { get; set; }

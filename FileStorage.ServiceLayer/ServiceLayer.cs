@@ -18,19 +18,34 @@ namespace Elinkx.FileStorage.ServiceLayer
         {
             try
             {
-                if (_dataLayer.FileIdExists(insertRequest.FileId))
-                {
-                    return _dataLayer.InsertVersion(insertRequest);
-                }
-                return _dataLayer.Insert(insertRequest);
+                    return _dataLayer.Insert(insertRequest);
             }
             catch (Exception e) //melo by se logovat zvlast, nyni OK.
             {
-                
+
                 return new InsertResult()
                 {
                     ResultType = ResultTypes.NotInserted,
-                    Message = e.Message
+                    Message = e.GetRootMessage()
+                };
+
+            }
+
+        }
+
+        public InsertVersionResult InsertVersion(InsertVersionRequest insertVersionRequest)
+        {
+            try
+            {
+                return _dataLayer.InsertVersion(insertVersionRequest);
+            }
+            catch (Exception e) //melo by se logovat zvlast, nyni OK.
+            {
+
+                return new InsertVersionResult()
+                {
+                    ResultType = ResultTypes.NotInserted,
+                    Message = e.GetRootMessage()
                 };
 
             }

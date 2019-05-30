@@ -27,7 +27,6 @@ namespace Elinkx.FileStorage.DataLayer
             metadata.DocumentId = insertRequest.DocumentId;
             metadata.TypeId = insertRequest.TypeId;
             metadata.SubtypeId = insertRequest.SubtypeId;
-            metadata.Signed = insertRequest.Signed;
             metadata.Reject = false;
             metadata.Created = DateTime.Now;
             metadata.CreatedBy = insertRequest.UserCode;
@@ -40,6 +39,7 @@ namespace Elinkx.FileStorage.DataLayer
             fileVersion = new FileVersion();
             fileVersion.Metadata = metadata;
             fileVersion.FileContent = fileContent;
+            fileVersion.Signed = insertRequest.Signed;
             fileVersion.Changed = metadata.Changed;
             fileVersion.ChangedBy = metadata.ChangedBy;
             fileVersion.Size = fileContent.Content.Length;
@@ -53,13 +53,13 @@ namespace Elinkx.FileStorage.DataLayer
                 ResultType = ResultTypes.Inserted,
             };
         }
-        public InsertResult InsertVersion(InsertRequest insertRequest)
+        public InsertVersionResult InsertVersion(InsertVersionRequest insertVersionRequest)
         {
-            metadata = _context.Metadata.Find(insertRequest.FileId);
+            metadata = _context.Metadata.Find(insertVersionRequest.FileId);
             metadata.Changed = DateTime.Now;
-            metadata.ChangedBy = insertRequest.UserCode;
+            metadata.ChangedBy = insertVersionRequest.UserCode;
             fileContent = new FileContent();
-            fileContent.Content = insertRequest.Content;
+            fileContent.Content = insertVersionRequest.Content;
             _context.Add(fileContent);
             fileVersion = new FileVersion();
             fileVersion.Metadata = metadata;
@@ -67,13 +67,15 @@ namespace Elinkx.FileStorage.DataLayer
             fileVersion.Changed = metadata.Changed;
             fileVersion.ChangedBy = metadata.ChangedBy;
             fileVersion.Size = fileContent.Content.Length;
+            fileVersion.Signed = insertVersionRequest.Signed;
             _context.Add(fileVersion);
             _context.SaveChanges();
-            return new InsertResult()
+            return new InsertVersionResult()
             {
-                FileId = metadata.FileId,
+                RowId = fileContent.RowId,
                 Changed = metadata.Changed,
                 ChangedBy = metadata.ChangedBy,
+                Signed = fileVersion.Signed,
                 ResultType = ResultTypes.Inserted,
             };
         }
@@ -86,7 +88,7 @@ namespace Elinkx.FileStorage.DataLayer
             metadata.Description = !string.IsNullOrEmpty(updateRequest.Description) ? updateRequest.Description : metadata.Description;
             metadata.DocumentId = !(updateRequest.DocumentId != 0) ? updateRequest.DocumentId : metadata.DocumentId;
             metadata.TypeId = !string.IsNullOrEmpty(updateRequest.TypeId) ? updateRequest.TypeId : metadata.TypeId;
-            metadata.SubtypeId = !string.IsNullOrEmpty(updateRequest.SubtypeId) ? updateRequest.SubtypeId : metadata.SubtypeId; 
+            metadata.SubtypeId = !string.IsNullOrEmpty(updateRequest.SubtypeId) ? updateRequest.SubtypeId : metadata.SubtypeId;
             metadata.Changed = DateTime.Now;
             metadata.ChangedBy = updateRequest.UserCode;
             _context.SaveChanges();
@@ -101,7 +103,6 @@ namespace Elinkx.FileStorage.DataLayer
         public DeleteResult Delete(DeleteRequest deleteRequest)
         {
             metadata = _context.Metadata.Find(deleteRequest.FileId);
-            DeleteResult result = new DeleteResult();
             metadata.Reject = true;
             _context.Add(metadata);
             _context.SaveChanges();
@@ -113,19 +114,13 @@ namespace Elinkx.FileStorage.DataLayer
         }
         public IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest)
         {
-            //throw new NotImplementedException();
-            //1. DocumentId, TypeId (+ nepovinny SubtypeId) vraci kolekci metadat + kolekci verzi ienumerable v kazdem
-            //+ pridat lastRowId kde bude posledno verze.
-            //2. SubjectId(ZakaznickeCislo), IEnumerable + kolekci verzi IEnumerable
-            //najdi metadata ktere maji dane subjektId
-            //do kazde polozku resultu preklop kolekci verzi k dane polozce a take nejvyssi verzi
-
-            if (string.IsNullOrEmpty(getMetadataRequest.SubtypeId))
+            if (string.IsNullOrEmpty(getMetadataRequest.SubtypeId) && (getMetadataRequest.SubjectId == 0))
             {
                 List<Metadata> metadata = QueryByDocAndTypeId(getMetadataRequest);
                 return MapToResultList(metadata);
             }
-            else if (getMetadataRequest.SubjectId != 0) {
+            else if (getMetadataRequest.SubjectId != 0)
+            {
                 List<Metadata> metadata = QueryBySubjectId(getMetadataRequest);
                 return MapToResultList(metadata);
             }
@@ -146,7 +141,7 @@ namespace Elinkx.FileStorage.DataLayer
             result.ResultType = ResultTypes.DataOk;
             return result;
         }
-        //helper methods
+
         public bool FileIdExists(int fileId)
         {
             if (_context.Metadata.Find(fileId) != null)
@@ -167,7 +162,6 @@ namespace Elinkx.FileStorage.DataLayer
         {
             _context.Dispose();
         }
-
 
         // Old Query functions
         //    //Set Reject by File ID (SoftDelete)
@@ -320,10 +314,9 @@ namespace Elinkx.FileStorage.DataLayer
             return _context.Metadata.Where(dbEntry =>
                 (dbEntry.SubjectId == getMetadataRequest.SubjectId)).ToList();
         }
-
         private IEnumerable<GetMetadataResult> MapToResultList(List<Metadata> metadata)
         {
-            int maxRowid = 0;
+            // int maxRowid = 0;
             List<GetMetadataResult> result = new List<GetMetadataResult>();
             foreach (var item in metadata)
             {
@@ -338,28 +331,32 @@ namespace Elinkx.FileStorage.DataLayer
                     DocumentId = item.DocumentId,
                     FileId = item.FileId,
                     Name = item.Name,
-                    Signed = item.Signed,
                     SubjectId = item.SubjectId,
                     SubtypeId = item.SubtypeId,
                     TypeId = item.TypeId,
-                    AllVersionsRowIds = GetRowIdsFromMetadata(item, out maxRowid),
-                    LastVersionRowId = maxRowid
+                    AllVersions = GetVersionsFromMetadata(item)
                 });
             }
             return result;
-            
+
         }
-        private List<int> GetRowIdsFromMetadata(Metadata md, out int maxRowid)
+        private List<FileVersionResult> GetVersionsFromMetadata(Metadata md)
         {
-            List<int> RowIds = new List<int>();
-            // Rowids ktere jsou ve VersionIds podle Dane 
-            var q = _context.FileContent.Where(c => c.FileVersion.Metadata.FileId == md.FileId).ToList();
-            foreach (var item in q)
+            List<FileVersionResult> versions = new List<FileVersionResult>();
+            var getversions = _context.FileVersion.Where(c => c.Metadata.FileId == md.FileId);
+
+            foreach (var item in getversions)
             {
-                RowIds.Add(item.RowId);
+                versions.Add(new FileVersionResult()
+                {
+                    Changed = item.Changed,
+                    ChangedBy = item.ChangedBy,
+                    Size = item.Size,
+                    Signed = item.Signed,
+                    RowId = _context.FileContent.Where(c => c.FileVersion.VersionId == item.VersionId).Single().RowId
+                });
             }
-            maxRowid = RowIds.Max();
-            return RowIds;
+            return versions;
         }
     }
 }

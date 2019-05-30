@@ -22,7 +22,7 @@ namespace Elinkx.FileStorage.DataLayer.Entities
         public string TypeId { get; set; }
         [MaxLength(20)]
         public string SubtypeId { get; set; }
-        public bool Signed { get; set; } = false;
+        [Required]
         public bool Reject { get; set; } = false;
         [MaxLength(20), Required]
         public string CreatedBy { get; set; }

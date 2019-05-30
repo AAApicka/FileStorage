@@ -41,11 +41,14 @@ namespace Elinkx.FileStorage.DataLayer.Migrations
                     b.Property<DateTime>("Changed");
 
                     b.Property<string>("ChangedBy")
+                        .IsRequired()
                         .HasMaxLength(20);
 
                     b.Property<int?>("FileId");
 
                     b.Property<int?>("RowId");
+
+                    b.Property<bool>("Signed");
 
                     b.Property<int>("Size");
 
@@ -69,14 +72,17 @@ namespace Elinkx.FileStorage.DataLayer.Migrations
                     b.Property<DateTime>("Changed");
 
                     b.Property<string>("ChangedBy")
+                        .IsRequired()
                         .HasMaxLength(20);
 
                     b.Property<string>("ContentType")
+                        .IsRequired()
                         .HasMaxLength(150);
 
                     b.Property<DateTime>("Created");
 
                     b.Property<string>("CreatedBy")
+                        .IsRequired()
                         .HasMaxLength(20);
 
                     b.Property<string>("Description");
@@ -84,11 +90,10 @@ namespace Elinkx.FileStorage.DataLayer.Migrations
                     b.Property<int>("DocumentId");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasMaxLength(255);
 
                     b.Property<bool>("Reject");
-
-                    b.Property<bool>("Signed");
 
                     b.Property<int>("SubjectId");
 
@@ -96,6 +101,7 @@ namespace Elinkx.FileStorage.DataLayer.Migrations
                         .HasMaxLength(20);
 
                     b.Property<string>("TypeId")
+                        .IsRequired()
                         .HasMaxLength(20);
 
                     b.HasKey("FileId");

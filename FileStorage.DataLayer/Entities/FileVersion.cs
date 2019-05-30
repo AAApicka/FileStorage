@@ -15,6 +15,7 @@ namespace Elinkx.FileStorage.DataLayer.Entities
         public string ChangedBy { get; set; }
         [Required]
         public int Size { get; set; }
+        public bool Signed { get; set; } = false;
         [ForeignKey("FileId")]
         public Metadata Metadata { get; set; }
         [ForeignKey("RowId")]

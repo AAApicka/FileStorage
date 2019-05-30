@@ -18,7 +18,7 @@ namespace Elinkx.FileStorage.Controllers
         }
 
         /// <summary>
-        /// Service method call. Inserts new entry into the database or adds new version
+        /// Inserts
         /// </summary>
         /// <param name="insertRequest">Required contract specification</param>
         /// <returns>Result of operation</returns>
@@ -27,9 +27,14 @@ namespace Elinkx.FileStorage.Controllers
         {
             return _service.Insert(insertRequest);
         }
+        [Route("insertversion")]
+        public InsertVersionResult InsertVersion(InsertVersionRequest insertVersionRequest)
+        {
+            return _service.InsertVersion(insertVersionRequest);
+        }
 
         /// <summary>
-        /// Service method call. Updates entry in the database
+        /// Updates
         /// </summary>
         /// <param name="updateRequest">Required contract specification</param>
         /// <returns>Result of operation</returns>
@@ -39,18 +44,33 @@ namespace Elinkx.FileStorage.Controllers
             return _service.Update(updateRequest);
         }
 
+        /// <summary>
+        /// Deletes
+        /// </summary>
+        /// <param name="deleteRequest"></param>
+        /// <returns></returns>
         [Route("delete")]
         public DeleteResult Delete(DeleteRequest deleteRequest)
         {
             return _service.Delete(deleteRequest);
         }
 
+        /// <summary>
+        /// Gets metadata
+        /// </summary>
+        /// <param name="getMetadataRequest"></param>
+        /// <returns></returns>
         [Route("getmetadata")]
         public IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest)
         {
             return _service.GetMetadata(getMetadataRequest);
         }
 
+        /// <summary>
+        /// Gets content 
+        /// </summary>
+        /// <param name="getFileRequest"></param>
+        /// <returns><see cref="GetFileResult"/></returns>
         [Route("getfile")]
         public GetFileResult GetFile(GetFileRequest getFileRequest)
         {
