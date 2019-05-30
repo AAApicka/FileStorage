@@ -9,6 +9,7 @@ namespace Elinkx.FileStorage.DataLayer.Entities
     {
         [Key]
         public int RowId { get; set; }
+        [Required]
         public byte[] Content { get; set; }
 
         public FileVersion FileVersion { get; set; }

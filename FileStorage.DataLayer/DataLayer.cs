@@ -97,10 +97,10 @@ namespace Elinkx.FileStorage.DataLayer
         {
             metadata = _context.Metadata.Find(updateRequest.FileId);
             metadata.ContentType = !string.IsNullOrEmpty(updateRequest.ContentType) ? updateRequest.ContentType : metadata.ContentType;
-            metadata.SubjectId = !(updateRequest.SubjectId != 0) ? updateRequest.SubjectId : metadata.SubjectId;
+            metadata.SubjectId = !(updateRequest.SubjectId == 0) ? updateRequest.SubjectId : metadata.SubjectId;
             metadata.Name = !string.IsNullOrEmpty(updateRequest.Name) ? updateRequest.Name : metadata.Name;
             metadata.Description = !string.IsNullOrEmpty(updateRequest.Description) ? updateRequest.Description : metadata.Description;
-            metadata.DocumentId = !(updateRequest.DocumentId != 0) ? updateRequest.DocumentId : metadata.DocumentId;
+            metadata.DocumentId = !(updateRequest.DocumentId == 0) ? updateRequest.DocumentId : metadata.DocumentId;
             metadata.TypeId = !string.IsNullOrEmpty(updateRequest.TypeId) ? updateRequest.TypeId : metadata.TypeId;
             metadata.SubtypeId = !string.IsNullOrEmpty(updateRequest.SubtypeId) ? updateRequest.SubtypeId : metadata.SubtypeId;
             metadata.Changed = DateTime.Now;
