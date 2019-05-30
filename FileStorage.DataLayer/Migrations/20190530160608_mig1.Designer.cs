@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Elinkx.FileStorage.DataLayer.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20190530094917_evo0")]
-    partial class evo0
+    [Migration("20190530160608_mig1")]
+    partial class mig1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

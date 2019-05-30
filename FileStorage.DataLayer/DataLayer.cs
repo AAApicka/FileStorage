@@ -18,7 +18,7 @@ namespace Elinkx.FileStorage.DataLayer
         {
             _context = context;
         }
-
+         
         public InsertResult Insert(InsertRequest insertRequest)
         {
             metadata = new Metadata
@@ -59,6 +59,7 @@ namespace Elinkx.FileStorage.DataLayer
                 Changed = metadata.Changed,
                 ChangedBy = metadata.ChangedBy,
                 ResultType = ResultTypes.Inserted,
+                Message = ResultTypes.Inserted.ToString()
             };
         }
         public InsertVersionResult InsertVersion(InsertVersionRequest insertVersionRequest)
@@ -89,6 +90,7 @@ namespace Elinkx.FileStorage.DataLayer
                 ChangedBy = metadata.ChangedBy,
                 Signed = fileVersion.Signed,
                 ResultType = ResultTypes.Inserted,
+                Message = ResultTypes.Inserted.ToString()
             };
         }
         public UpdateResult Update(UpdateRequest updateRequest)
@@ -109,19 +111,20 @@ namespace Elinkx.FileStorage.DataLayer
                 FileId = metadata.FileId,
                 Changed = metadata.Changed,
                 ChangedBy = metadata.ChangedBy,
-                ResultType = ResultTypes.Updated
+                ResultType = ResultTypes.Updated,
+                Message = ResultTypes.Updated.ToString()
             };
         }
         public DeleteResult Delete(DeleteRequest deleteRequest)
         {
             metadata = _context.Metadata.Find(deleteRequest.FileId);
             metadata.Reject = true;
-            _context.Add(metadata);
             _context.SaveChanges();
             return new DeleteResult()
             {
                 FileId = metadata.FileId,
-                ResultType = ResultTypes.Deleted
+                ResultType = ResultTypes.Deleted,
+                Message = ResultTypes.Deleted.ToString()
             };
         }
         public IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest)
@@ -149,6 +152,7 @@ namespace Elinkx.FileStorage.DataLayer
             var content = _context.FileContent.Single(v => v.FileVersion.FileContent.RowId == getFileRequest.RowId);
             result.Content = content.Content;
             result.ResultType = ResultTypes.GetFileSuccess;
+            result.Message = ResultTypes.GetFileSuccess.ToString();
             return result;
         }
 
@@ -190,7 +194,8 @@ namespace Elinkx.FileStorage.DataLayer
                     SubtypeId = item.SubtypeId,
                     TypeId = item.TypeId,
                     AllVersions = GetVersionsFromMetadata(item).ToList(),
-                    ResultType = ResultTypes.GetMetadataSuccess
+                    ResultType = ResultTypes.GetMetadataSuccess,
+                    Message = ResultTypes.GetMetadataSuccess.ToString()
                 });
             }
             return result;
