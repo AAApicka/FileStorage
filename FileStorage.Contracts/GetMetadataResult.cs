@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Elinkx.FileStorage.Contracts
 {
-    public class GetMetadataResult
+    public class GetMetadataResult: ResultBase
     {
         public int FileId { get; set; }
         public string ContentType { get; set; }
@@ -20,9 +20,8 @@ namespace Elinkx.FileStorage.Contracts
         public DateTime Created { get; set; }
         public string ChangedBy { get; set; }
         public DateTime Changed { get; set; }
-       // [NonSerialized]
-        //neserializovat lastversion
-        public FileVersionResult LastVersion { get { return AllVersions.OrderBy(c => c.ChangedBy).Last();  } }
+        //[NonSerialized]
+        public FileVersionResult LastVersion { get { return AllVersions.OrderBy(c => c.Changed).Last();  } }
         public List<FileVersionResult> AllVersions { get; set; }
     }
     public class FileVersionResult

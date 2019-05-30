@@ -11,6 +11,7 @@ namespace Elinkx.FileStorage.Contracts
     }
     public enum ResultTypes
     {
-        Inserted, Updated, DataMissing, Deleted, NotInserted, NotUpdated, DataOk, NotDeleted, Warning, Received, NotReceived
+        Inserted, Updated, Deleted, GetMetadataSuccess, GetFileSuccess, Success,
+        NotInserted, NotUpdated, NotDeleted, GetMetadataFailed, GetFileFailed, Failed
     }
 }

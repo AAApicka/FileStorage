@@ -47,9 +47,7 @@ namespace Elinkx.FileStorage.ServiceLayer
                     ResultType = ResultTypes.NotInserted,
                     Message = e.GetRootMessage()
                 };
-
             }
-
         }
 
         public UpdateResult Update(UpdateRequest updateRequest)
@@ -71,11 +69,11 @@ namespace Elinkx.FileStorage.ServiceLayer
             }
             catch (Exception e)
             {
-               
+
                 return new UpdateResult()
                 {
                     ResultType = ResultTypes.NotUpdated,
-                    Message = e.Message
+                    Message = e.GetRootMessage()
                 };
 
             }
@@ -84,19 +82,41 @@ namespace Elinkx.FileStorage.ServiceLayer
 
         public DeleteResult Delete(DeleteRequest deleteRequest)
         {
-            return _dataLayer.Delete(deleteRequest);
+            try
+            {
+                return _dataLayer.Delete(deleteRequest);
+            }
+            catch (Exception e)
+            {
+
+                return new DeleteResult()
+                {
+                    ResultType = ResultTypes.NotDeleted,
+                    Message = e.GetRootMessage()
+                };
+            }
+           
         }
 
         public IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest)
         {
-            return _dataLayer.GetMetadata(getMetadataRequest);
+            try
+            {
+                return _dataLayer.GetMetadata(getMetadataRequest);
+            }
+            catch (Exception e)
+            {
+                return new List<GetMetadataResult>()
+                {
+                    new GetMetadataResult()
+                    {
+                    ResultType = ResultTypes.GetMetadataFailed,
+                    Message = e.GetRootMessage()
+                    }
+                };
+            }        
         }
 
-        /// <summary>
-        /// Get File Content by rowId
-        /// </summary>
-        /// <param name="getFileRequest"></param>
-        /// <returns></returns>
         public GetFileResult GetFile(GetFileRequest getFileRequest){
                 try {
                     if (_dataLayer.RowIdExists(getFileRequest.RowId)){
@@ -104,14 +124,15 @@ namespace Elinkx.FileStorage.ServiceLayer
                     }
                     else{
                         return new GetFileResult(){
-                            ResultType = ResultTypes.DataMissing
+                            ResultType = ResultTypes.GetFileFailed,
+                            Message = "File doesnt exist"
                         };
                     }
                 }
                 catch (Exception e){
                 return new GetFileResult() {
-                    ResultType = ResultTypes.NotReceived,
-                    Message = e.Message    
+                    ResultType = ResultTypes.GetFileFailed,
+                    Message = e.GetRootMessage()    
                     };
                 }
         }

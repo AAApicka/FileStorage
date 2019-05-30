@@ -9,40 +9,48 @@ namespace Elinkx.FileStorage.DataLayer
 {
     public class DataLayer : IDataLayer, IDisposable
     {
-        DataContext _context;
+        readonly DataContext _context;
         Metadata metadata;
         FileVersion fileVersion;
         FileContent fileContent;
+
         public DataLayer(DataContext context)
         {
             _context = context;
         }
+
         public InsertResult Insert(InsertRequest insertRequest)
         {
-            metadata = new Metadata();
-            metadata.ContentType = insertRequest.ContentType;
-            metadata.SubjectId = insertRequest.SubjectId;
-            metadata.Name = insertRequest.Name;
-            metadata.Description = insertRequest.Description;
-            metadata.DocumentId = insertRequest.DocumentId;
-            metadata.TypeId = insertRequest.TypeId;
-            metadata.SubtypeId = insertRequest.SubtypeId;
-            metadata.Reject = false;
-            metadata.Created = DateTime.Now;
-            metadata.CreatedBy = insertRequest.UserCode;
-            metadata.Changed = DateTime.Now;
-            metadata.ChangedBy = insertRequest.UserCode;
+            metadata = new Metadata
+            {
+                ContentType = insertRequest.ContentType,
+                SubjectId = insertRequest.SubjectId,
+                Name = insertRequest.Name,
+                Description = insertRequest.Description,
+                DocumentId = insertRequest.DocumentId,
+                TypeId = insertRequest.TypeId,
+                SubtypeId = insertRequest.SubtypeId,
+                Reject = false,
+                Created = DateTime.Now,
+                CreatedBy = insertRequest.UserCode,
+                Changed = DateTime.Now,
+                ChangedBy = insertRequest.UserCode
+            };
             _context.Add(metadata);
-            fileContent = new FileContent();
-            fileContent.Content = insertRequest.Content;
+            fileContent = new FileContent
+            {
+                Content = insertRequest.Content
+            };
             _context.Add(fileContent);
-            fileVersion = new FileVersion();
-            fileVersion.Metadata = metadata;
-            fileVersion.FileContent = fileContent;
-            fileVersion.Signed = insertRequest.Signed;
-            fileVersion.Changed = metadata.Changed;
-            fileVersion.ChangedBy = metadata.ChangedBy;
-            fileVersion.Size = fileContent.Content.Length;
+            fileVersion = new FileVersion
+            {
+                Metadata = metadata,
+                FileContent = fileContent,
+                Signed = insertRequest.Signed,
+                Changed = metadata.Changed,
+                ChangedBy = metadata.ChangedBy,
+                Size = fileContent.Content.Length
+            };
             _context.Add(fileVersion);
             _context.SaveChanges();
             return new InsertResult()
@@ -58,16 +66,20 @@ namespace Elinkx.FileStorage.DataLayer
             metadata = _context.Metadata.Find(insertVersionRequest.FileId);
             metadata.Changed = DateTime.Now;
             metadata.ChangedBy = insertVersionRequest.UserCode;
-            fileContent = new FileContent();
-            fileContent.Content = insertVersionRequest.Content;
+            fileContent = new FileContent
+            {
+                Content = insertVersionRequest.Content
+            };
             _context.Add(fileContent);
-            fileVersion = new FileVersion();
-            fileVersion.Metadata = metadata;
-            fileVersion.FileContent = fileContent;
-            fileVersion.Changed = metadata.Changed;
-            fileVersion.ChangedBy = metadata.ChangedBy;
-            fileVersion.Size = fileContent.Content.Length;
-            fileVersion.Signed = insertVersionRequest.Signed;
+            fileVersion = new FileVersion
+            {
+                Metadata = metadata,
+                FileContent = fileContent,
+                Changed = metadata.Changed,
+                ChangedBy = metadata.ChangedBy,
+                Size = fileContent.Content.Length,
+                Signed = insertVersionRequest.Signed
+            };
             _context.Add(fileVersion);
             _context.SaveChanges();
             return new InsertVersionResult()
@@ -133,169 +145,13 @@ namespace Elinkx.FileStorage.DataLayer
         }
         public GetFileResult GetFile(GetFileRequest getFileRequest)
         {
-            //1. dle RowId vraci danou verzi - Hotovo
             GetFileResult result = new GetFileResult();
             var content = _context.FileContent.Single(v => v.FileVersion.FileContent.RowId == getFileRequest.RowId);
-
             result.Content = content.Content;
-            result.ResultType = ResultTypes.DataOk;
+            result.ResultType = ResultTypes.GetFileSuccess;
             return result;
         }
 
-        public bool FileIdExists(int fileId)
-        {
-            if (_context.Metadata.Find(fileId) != null)
-            {
-                return true;
-            }
-            return false;
-        }
-        public bool RowIdExists(int rowId)
-        {
-            if (_context.FileContent.Single(c => c.RowId == rowId) != null)
-            {
-                return true;
-            }
-            return false;
-        }
-        public void Dispose()
-        {
-            _context.Dispose();
-        }
-
-        // Old Query functions
-        //    //Set Reject by File ID (SoftDelete)
-        //    public DeleteResult Delete(DeleteRequest setRejectRequest)
-        //    {
-
-        //        using (var _context = new DataContext(connectionString))
-        //        {
-        //            Metadata metadata = new Metadata();
-        //            DeleteResult result = new DeleteResult();
-
-        //            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
-        //            {
-        //                try
-        //                {
-        //                    metadata = _context.Metadata.Find(setRejectRequest.FileId);
-        //                    if (metadata == null)
-        //                    {
-        //                        throw new Exception("metadata is null, couldn't find data with that FileId");
-        //                    }
-        //                    else
-        //                    {
-        //                        SetReject(setRejectRequest, metadata);
-        //                        _context.SaveChanges();
-        //                        SetResult(metadata, result);
-        //                        transaction.Commit();
-        //                    }
-        //                }
-        //                catch (Exception e)
-        //                {
-        //                    transaction.Rollback();
-        //                    System.Diagnostics.Debug.WriteLine(e.Message + e.StackTrace);
-        //                }
-        //                return result;
-        //            }
-        //        }
-
-        //    }
-
-
-        //    //Get File Content by File Id or Document Id
-        //    public GetFileResult GetFile(GetFileRequest getFileRequest)
-        //    {
-        //        GetFileResult result = new GetFileResult();
-
-        //        using (var _context = new DataContext(connectionString))
-        //        {
-        //            try
-        //            {
-
-        //                if (getFileRequest.FileId > 0 && getFileRequest.DocumentID == 0)
-        //                {
-        //                    QueryFileContentByFileId(getFileRequest, result, _context);
-        //                    result.ResultType = ResultTypes.Received;
-        //                    return result;
-        //                }
-        //                else if (getFileRequest.FileId == 0 && getFileRequest.DocumentID > 0)
-        //                {
-        //                    QueryFileContentByDocumentId(getFileRequest, result, _context);
-        //                    result.ResultType = ResultTypes.Received;
-        //                    return result;
-        //                }
-        //            }
-        //            catch (Exception e)
-        //            {
-        //                System.Diagnostics.Debug.WriteLine(e.Message + e.StackTrace);
-        //                result.ResultType = ResultTypes.NotReceived;
-        //            }
-        //            return result;
-
-        //        }
-        //    }
-
-
-        //private void QueryFileContentByDocumentId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
-        //{
-        //    var fileIdquery = (from c in _context.Metadata
-        //                       where c.DocumentId == getFileRequest.DocumentID
-        //                       select c).Single().FileId;
-        //    var lastVersion = (from c in _context.FileVersion
-        //                       where c.FileId == fileIdquery
-        //                       select c).Max(c => c.RowId);
-        //    var lastFile = (from c in _context.FileContent
-        //                    where c.RowId == lastVersion
-        //                    select c).Single();
-
-        //    result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).Single().ChangedBy;
-        //    result.Content = lastFile.Content;
-        //}
-
-        //private void QueryFileContentByFileId(GetFileRequest getFileRequest, GetFileResult result, DataContext _context)
-        //{
-        //    var lastVersion = (from c in _context.FileVersion
-        //                       where c.FileId == getFileRequest.FileId
-        //                       select c).Max(c => c.RowId);
-
-        //    var lastFile = (from c in _context.FileContent
-        //                    where c.RowId == lastVersion
-        //                    select c).Single();
-
-        //    result.ChangedBy = _context.FileVersion.Where(c => c.RowId == lastVersion).Single().ChangedBy;
-        //    result.Content = lastFile.Content;
-        //}
-        //    private void EditMetadata(InsertRequest setFileRequest, Metadata metadata)
-        //    {
-        //        metadata.Changed = DateTime.Now;
-        //        metadata.ChangedBy = setFileRequest.UserCode;
-        //    }
-        //    private void SetResult(Metadata metadata, InsertResult result)
-        //    {
-        //        result.FileId = metadata.FileId;
-        //        result.Changed = DateTime.Now;
-        //        result.ChangedBy = metadata.ChangedBy;
-        //    }
-        //    private void SetResult(Metadata metadata, DeleteResult result)
-        //    {
-        //        result.FileId = metadata.FileId;
-        //result.Changed = metadata.Changed;
-        //        result.ChangedBy = metadata.ChangedBy;
-        //        result.Reject = metadata.Reject;
-        //    }
-
-        //    private void SetNewContent(InsertRequest setFileRequest, DataContext _context, FileContent fileContent)
-        //    {
-
-
-        //    }
-
-        //    private void SetReject(DeleteRequest setRejectRequest, Metadata metadata)
-        //    {
-        //        metadata.Reject = setRejectRequest.Reject;
-        //        metadata.Changed = DateTime.Now;
-        //        metadata.ChangedBy = setRejectRequest.UserCode;
-        //    }
         private List<Metadata> QueryByDocAndTypeId(GetMetadataRequest getMetadataRequest)
         {
             return _context.Metadata.Where(dbEntry =>
@@ -316,7 +172,6 @@ namespace Elinkx.FileStorage.DataLayer
         }
         private IEnumerable<GetMetadataResult> MapToResultList(List<Metadata> metadata)
         {
-            // int maxRowid = 0;
             List<GetMetadataResult> result = new List<GetMetadataResult>();
             foreach (var item in metadata)
             {
@@ -334,29 +189,47 @@ namespace Elinkx.FileStorage.DataLayer
                     SubjectId = item.SubjectId,
                     SubtypeId = item.SubtypeId,
                     TypeId = item.TypeId,
-                    AllVersions = GetVersionsFromMetadata(item)
+                    AllVersions = GetVersionsFromMetadata(item).ToList(),
+                    ResultType = ResultTypes.GetMetadataSuccess
                 });
             }
             return result;
 
         }
-        private List<FileVersionResult> GetVersionsFromMetadata(Metadata md)
+        private IEnumerable<FileVersionResult> GetVersionsFromMetadata(Metadata md)
         {
             List<FileVersionResult> versions = new List<FileVersionResult>();
-            var getversions = _context.FileVersion.Where(c => c.Metadata.FileId == md.FileId);
+            return _context.FileVersion.Where(c => c.Metadata.FileId == md.FileId)
+                            .Select(c => new FileVersionResult() {
+                                Changed = c.Changed,
+                                ChangedBy = c.ChangedBy,
+                                Size = c.Size,
+                                Signed = c.Signed,
+                                RowId = c.FileContent.RowId
+                            });
 
-            foreach (var item in getversions)
+        }
+
+        //helper methods
+        public bool FileIdExists(int fileId)
+        {
+            if (_context.Metadata.Find(fileId) != null)
             {
-                versions.Add(new FileVersionResult()
-                {
-                    Changed = item.Changed,
-                    ChangedBy = item.ChangedBy,
-                    Size = item.Size,
-                    Signed = item.Signed,
-                    RowId = _context.FileContent.Where(c => c.FileVersion.VersionId == item.VersionId).Single().RowId
-                });
+                return true;
             }
-            return versions;
+            return false;
+        }
+        public bool RowIdExists(int rowId)
+        {
+            if (_context.FileContent.Single(c => c.RowId == rowId) != null)
+            {
+                return true;
+            }
+            return false;
+        }
+        public void Dispose()
+        {
+            _context.Dispose();
         }
     }
 }
