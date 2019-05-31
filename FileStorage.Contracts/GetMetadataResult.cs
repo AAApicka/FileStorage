@@ -15,7 +15,6 @@ namespace Elinkx.FileStorage.Contracts
         public int DocumentId { get; set; }
         public string TypeId { get; set; }
         public string SubtypeId { get; set; }
-        public bool Signed { get; set; }
         public string CreatedBy { get; set; }
         public DateTime Created { get; set; }
         public string ChangedBy { get; set; }
