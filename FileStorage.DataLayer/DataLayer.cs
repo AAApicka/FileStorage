@@ -162,15 +162,13 @@ namespace Elinkx.FileStorage.DataLayer
             metadata.ChangedBy = insertVersionRequest.UserCode;
             fileContent = _context.FileContent.Where(c => c.FileVersion.Metadata.FileId == insertVersionRequest.FileId).OrderBy(c => c.FileVersion.Changed).Last();
             fileContent.Content = insertVersionRequest.Content;
-            fileVersion = new FileVersion
-            {
-                Metadata = metadata,
-                FileContent = fileContent,
-                Changed = metadata.Changed,
-                ChangedBy = metadata.ChangedBy,
-                Size = fileContent.Content.Length,
-                Signed = insertVersionRequest.Signed
-            };
+            fileVersion = _context.FileVersion.Single(x => x.FileContent.RowId == fileContent.RowId);
+            fileVersion.Metadata = metadata;
+            fileVersion.FileContent = fileContent;
+            fileVersion.Changed = metadata.Changed;
+            fileVersion.ChangedBy = metadata.ChangedBy;
+            fileVersion.Size = fileContent.Content.Length;
+            fileVersion.Signed = insertVersionRequest.Signed;
             _context.SaveChanges();
             return new InsertVersionResult()
             {
