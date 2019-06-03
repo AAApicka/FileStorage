@@ -157,17 +157,27 @@ namespace Elinkx.FileStorage.DataLayer
         }
         public InsertVersionResult UpdateLastVersionContent(InsertVersionRequest insertVersionRequest)
         {
-            //nahrad Content ve file content kde row id je rovno posledni verzi daneho file id
-            // FileContent.Content nahrad z InsertVersionRequest.Content
-            fileVersion = _context.FileVersion.Where(c => c.Metadata.FileId == insertVersionRequest.FileId).OrderBy(c => c.Changed).Last();
-            fileVersion.FileContent.Content = insertVersionRequest.Content;
+            metadata = _context.Metadata.Find(insertVersionRequest.FileId);
+            metadata.Changed = DateTime.Now;
+            metadata.ChangedBy = insertVersionRequest.UserCode;
+            fileContent = _context.FileContent.Where(c => c.FileVersion.Metadata.FileId == insertVersionRequest.FileId).OrderBy(c => c.FileVersion.Changed).Last();
+            fileContent.Content = insertVersionRequest.Content;
+            fileVersion = new FileVersion
+            {
+                Metadata = metadata,
+                FileContent = fileContent,
+                Changed = metadata.Changed,
+                ChangedBy = metadata.ChangedBy,
+                Size = fileContent.Content.Length,
+                Signed = insertVersionRequest.Signed
+            };
             _context.SaveChanges();
             return new InsertVersionResult()
             {
                 RowId = fileContent.RowId,
-                Changed = metadata.Changed,
-                ChangedBy = metadata.ChangedBy,
-                Signed = fileVersion.Signed,
+                Changed = DateTime.Now,
+                ChangedBy = insertVersionRequest.UserCode,
+                Signed = insertVersionRequest.Signed,
                 ResultType = ResultTypes.Updated,
                 Message = ResultTypes.Updated.ToString()
             };
