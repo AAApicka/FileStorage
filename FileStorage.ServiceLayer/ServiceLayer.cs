@@ -37,7 +37,14 @@ namespace Elinkx.FileStorage.ServiceLayer
         {
             try
             {
-                return _dataLayer.InsertVersion(insertVersionRequest);
+                if (insertVersionRequest.UpdateLastVersion)
+                {
+                    return _dataLayer.UpdateLastVersionContent(insertVersionRequest);
+                }
+                else
+                {
+                    return _dataLayer.InsertVersion(insertVersionRequest);
+                }
             }
             catch (Exception e) //melo by se logovat zvlast, nyni OK.
             {

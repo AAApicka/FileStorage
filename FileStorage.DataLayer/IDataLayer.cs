@@ -7,10 +7,12 @@ namespace Elinkx.FileStorage.DataLayer
     {
         InsertResult Insert(InsertRequest insertRequest);
         InsertVersionResult InsertVersion(InsertVersionRequest insertVersionRequest);
+        InsertVersionResult UpdateLastVersionContent(InsertVersionRequest insertVersionRequest);
         UpdateResult Update(UpdateRequest updateRequest);
         DeleteResult Delete(DeleteRequest deleteRequest);
         IEnumerable<GetMetadataResult> GetMetadata(GetMetadataRequest getMetadataRequest);
         GetFileResult GetFile(GetFileRequest getFileRequest);
+
         bool FileIdExists(int fileId);
         bool RowIdExists(int documentId);
     }

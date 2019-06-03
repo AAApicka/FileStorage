@@ -155,6 +155,25 @@ namespace Elinkx.FileStorage.DataLayer
             result.Message = ResultTypes.GetFileSuccess.ToString();
             return result;
         }
+        public InsertVersionResult UpdateLastVersionContent(InsertVersionRequest insertVersionRequest)
+        {
+            //nahrad Content ve file content kde row id je rovno posledni verzi daneho file id
+            // FileContent.Content nahrad z InsertVersionRequest.Content
+            fileVersion = _context.FileVersion.Where(c => c.Metadata.FileId == insertVersionRequest.FileId).OrderBy(c => c.Changed).Last();
+            fileVersion.FileContent.Content = insertVersionRequest.Content;
+            _context.SaveChanges();
+            return new InsertVersionResult()
+            {
+                RowId = fileContent.RowId,
+                Changed = metadata.Changed,
+                ChangedBy = metadata.ChangedBy,
+                Signed = fileVersion.Signed,
+                ResultType = ResultTypes.Updated,
+                Message = ResultTypes.Updated.ToString()
+            };
+
+        }
+
 
         private List<Metadata> QueryByDocAndTypeId(GetMetadataRequest getMetadataRequest)
         {
@@ -203,7 +222,7 @@ namespace Elinkx.FileStorage.DataLayer
         }
         private IEnumerable<FileVersionResult> GetVersionsFromMetadata(Metadata md)
         {
-            List<FileVersionResult> versions = new List<FileVersionResult>();
+            //List<FileVersionResult> versions = new List<FileVersionResult>();
             return _context.FileVersion.Where(c => c.Metadata.FileId == md.FileId)
                             .Select(c => new FileVersionResult() {
                                 Changed = c.Changed,
@@ -214,6 +233,7 @@ namespace Elinkx.FileStorage.DataLayer
                             });
 
         }
+
 
         //helper methods
         public bool FileIdExists(int fileId)
